@@ -1,0 +1,184 @@
+{
+  "kind": "build_request",
+  "title": "Mobile PageSpeed/Core Web Vitals overhaul (images, caching, render-blocking, robots/sitemap, contrast)",
+  "projectName": "RecomNow India",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-3",
+      "text": "Replace above-the-fold critical image assets with modern compressed formats and update the app to prefer those formats to improve LCP/FCP without changing layout.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "implement these changes directly in the project."
+        ]
+      },
+      "acceptanceCriteria": [
+        "New optimized hero and logo assets exist in the repo as static files and are referenced by the UI.",
+        "Hero image still renders immediately on first load (no blank/flash), and its layout dimensions remain stable (no CLS regression).",
+        "All non-critical images remain lazy-loaded below the fold."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update `frontend/src/components/OptimizedImage.tsx` to deliver responsive, non-blocking images: ensure priority images use `fetchpriority=\"high\"` and eager loading; non-priority images use lazy loading; decoding is async; and WebP/AVIF are preferred with safe PNG fallback.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Optimize images (your biggest win)",
+          "Improve image delivery — estimated savings 342 KiB"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Priority images render with eager loading and high fetch priority, and non-priority images load lazily when near viewport.",
+        "When a browser supports WebP/AVIF it receives those; otherwise it receives the PNG fallback.",
+        "All images rendered through `OptimizedImage` include explicit width/height (or equivalent aspect-ratio stability) to avoid layout shifts."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Eliminate render-blocking and unnecessary work in `frontend/index.html`: update preloads to target the optimized hero asset, keep only truly critical preloads, and ensure analytics remains deferred and does not block first paint.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Eliminate render‑blocking requests — estimated savings 150 ms"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`frontend/index.html` preloads the optimized hero asset used by the Hero component (and does not preload unused formats).",
+        "No additional synchronous scripts/styles are introduced that would block initial render."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Fix SEO robots.txt validity by serving a static `robots.txt` from `frontend/public/robots.txt` and ensure it includes a correct sitemap URL for `https://recomnowindia-2gi.caffeine.xyz/sitemap.xml`. Remove or bypass any React-route-based robots response that could cause crawlers to receive HTML/JS instead of plain text.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "SEO: “robots.txt is not valid — 65 errors found.”"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Requesting `/robots.txt` returns a plain-text robots file (not an HTML shell) when deployed.",
+        "The robots file contains `User-agent: *`, an allow rule, and a `Sitemap: https://recomnowindia-2gi.caffeine.xyz/sitemap.xml` line.",
+        "The SPA no longer relies on a React route that rewrites the document to produce robots.txt."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Fix sitemap delivery by serving a static `sitemap.xml` from `frontend/public/sitemap.xml` so crawlers can fetch XML directly without executing React. Ensure it uses `https://recomnowindia-2gi.caffeine.xyz/` as the base for URLs.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Optimize network dependency tree",
+          "SEO: “robots.txt is not valid — 65 errors found.”"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Requesting `/sitemap.xml` returns valid XML (not HTML/JS) when deployed.",
+        "The sitemap includes at minimum the homepage and key sections/anchors that are meaningful as standalone URLs (only include valid URL entries).",
+        "The SPA no longer depends on a React route that rewrites the document to produce the sitemap."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Improve cache efficiency for static assets using the existing service worker in `frontend/public/sw.js`: ensure generated image assets and build assets are cached with an appropriate cache-first or stale-while-revalidate strategy and that old caches are cleaned up reliably to reduce repeat-load transfer size.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Use efficient cache lifetimes — estimated savings 697 KiB"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On repeat visits, core static assets (JS/CSS/logo/hero) are served from the service worker cache when available.",
+        "Cache versioning and cleanup prevents unbounded cache growth and removes outdated cached entries after deploys.",
+        "Robots.txt and sitemap.xml are not incorrectly cached in a way that would cause stale/invalid content to persist after updates."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Reduce main-thread work and TBT by ensuring heavy UI chunks remain code-split and only load on demand (admin panel, login, blog, toaster), and by removing any remaining production console logging via build configuration.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Reduce JavaScript execution time — 2.5 s",
+          "Minimize main‑thread work — 2.9 s",
+          "Avoid long main‑thread tasks — 13 long tasks",
+          "Minify JavaScript — estimated savings 75 KiB"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Non-critical UI modules remain lazy-loaded and do not increase the initial JS payload for the homepage route.",
+        "Production builds do not emit `console.log/info/debug` statements (confirmed by terser configuration behavior)."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Resolve accessibility contrast warnings by adjusting the foreground/background color pairings (including muted text and gradient/button states) so text meets WCAG AA contrast on both light and dark themes without changing the overall brand feel.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Accessibility: “Background and foreground colors do not have a sufficient contrast ratio.”"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Common text styles (body, muted text, button text, links) meet WCAG AA contrast on the default background in light mode.",
+        "Dark mode text contrast remains acceptable and no key UI text becomes harder to read.",
+        "Visual styling remains consistent with current brand gradients and theme variables (no layout changes required)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit files under `frontend/src/components/ui` (compose them instead).",
+    "Do not edit immutable paths: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, and `frontend/src/components/ui/*`.",
+    "Backend must remain a single Motoko actor in `backend/main.mo`; only add `backend/migration.mo` if state schema changes are required (not expected for these performance/SEO fixes)."
+  ],
+  "nonGoals": [
+    "Adding new product features or redesigning the site structure beyond what is required for performance/SEO/accessibility fixes.",
+    "Introducing third-party CDNs or external build pipelines beyond what the project already supports.",
+    "Implementing real-time features or adding new authentication providers."
+  ],
+  "imageRequirements": {
+    "required": [
+      "RecomNow logo as WebP (recomnow-logo.dim_200x200.webp)",
+      "RecomNow logo as AVIF (recomnow-logo.dim_200x200.avif)",
+      "Hero banner as WebP (hero-banner.dim_1200x400.webp)",
+      "Hero banner as AVIF (hero-banner.dim_1200x400.avif)"
+    ],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

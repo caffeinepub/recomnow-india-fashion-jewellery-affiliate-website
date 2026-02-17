@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - Enhanced contrast for WCAG AA compliance */
+    --background: oklch(0.98 0.01 330);
+    --foreground: oklch(0.15 0.02 330);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.02 330);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.02 330);
+
+    --primary: oklch(0.45 0.28 330);
+    --primary-foreground: oklch(0.98 0.01 330);
+
+    --secondary: oklch(0.92 0.02 330);
+    --secondary-foreground: oklch(0.15 0.02 330);
+
+    --muted: oklch(0.92 0.02 330);
+    --muted-foreground: oklch(0.45 0.05 330);
+
+    --accent: oklch(0.92 0.02 330);
+    --accent-foreground: oklch(0.15 0.02 330);
+
+    --destructive: oklch(0.55 0.25 25);
+    --destructive-foreground: oklch(0.98 0.01 330);
+
+    --border: oklch(0.88 0.02 330);
+    --input: oklch(0.88 0.02 330);
+    --ring: oklch(0.45 0.28 330);
+
+    --radius: 0.5rem;
+
+    /* Custom brand colors - Enhanced contrast */
+    --primary-magenta: oklch(0.45 0.28 330);
+    --accent-purple: oklch(0.50 0.20 300);
+    --gradient-rainbow: linear-gradient(135deg, 
+      oklch(0.45 0.28 330) 0%, 
+      oklch(0.50 0.20 300) 50%, 
+      oklch(0.55 0.25 270) 100%);
+
+    --success: oklch(0.55 0.20 145);
+    --warning: oklch(0.65 0.20 85);
+  }
+
+  .dark {
+    --background: oklch(0.15 0.02 330);
+    --foreground: oklch(0.95 0.01 330);
+
+    --card: oklch(0.18 0.02 330);
+    --card-foreground: oklch(0.95 0.01 330);
+
+    --popover: oklch(0.18 0.02 330);
+    --popover-foreground: oklch(0.95 0.01 330);
+
+    --primary: oklch(0.60 0.28 330);
+    --primary-foreground: oklch(0.15 0.02 330);
+
+    --secondary: oklch(0.25 0.02 330);
+    --secondary-foreground: oklch(0.95 0.01 330);
+
+    --muted: oklch(0.25 0.02 330);
+    --muted-foreground: oklch(0.65 0.05 330);
+
+    --accent: oklch(0.25 0.02 330);
+    --accent-foreground: oklch(0.95 0.01 330);
+
+    --destructive: oklch(0.60 0.25 25);
+    --destructive-foreground: oklch(0.95 0.01 330);
+
+    --border: oklch(0.25 0.02 330);
+    --input: oklch(0.25 0.02 330);
+    --ring: oklch(0.60 0.28 330);
+
+    /* Custom brand colors for dark mode */
+    --primary-magenta: oklch(0.60 0.28 330);
+    --accent-purple: oklch(0.65 0.20 300);
+    --gradient-rainbow: linear-gradient(135deg, 
+      oklch(0.60 0.28 330) 0%, 
+      oklch(0.65 0.20 300) 50%, 
+      oklch(0.70 0.25 270) 100%);
+
+    --success: oklch(0.65 0.20 145);
+    --warning: oklch(0.75 0.20 85);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-gradient-rainbow {
+    background: var(--gradient-rainbow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-rainbow {
+    background: var(--gradient-rainbow);
+  }
+
+  .ring-gradient-rainbow {
+    box-shadow: 0 0 0 3px oklch(0.45 0.28 330 / 0.3);
+  }
+
+  .card-hover-effect {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover-effect:hover {
+    transform: translateY(-4px);
+  }
+}

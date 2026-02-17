@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Optimize existing Caffeine.ai site for mobile Core Web Vitals/PageSpeed (target 90+ performance) via image, JS/CSS, caching, render-blocking, accessibility contrast, and robots.txt improvements.",
+  "architectural_notes": [
+    "Primary goal: achieve 90+ mobile PageSpeed Performance by addressing LCP (7.5s) and TBT (1,390ms) via image optimization, JS/CSS reduction, caching, and render-blocking elimination."
+  ],
+  "known_issues": [
+    "Mobile PageSpeed Performance is 39 with poor LCP (7.5s) and high TBT (1,390ms).",
+    "Accessibility issue: insufficient color contrast detected.",
+    "SEO issue: robots.txt invalid (65 errors)."
+  ],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- RecomNow logo as WebP (recomnow-logo.dim_200x200.webp)\n- RecomNow logo as AVIF (recomnow-logo.dim_200x200.avif)\n- Hero banner as WebP (hero-banner.dim_1200x400.webp)\n- Hero banner as AVIF (hero-banner.dim_1200x400.avif)",
+  "existing_features": [
+    {
+      "id": "feature-replace-above-the-fold-critical-image-assets-with-modern-compressed-formats-and-update-the-app-to-prefer-those-formats-to-improve-lcp-fcp-without-changing-layout",
+      "title": "Replace above-the-fold critical image assets with modern compressed formats and update the app to prefer those formats to improve LCP/FCP without changing layout.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-components-optimizedimage-tsx-to-deliver-responsive-non-blocking-images-ensure-priority-images-use-fetchpriority-high-and-eager-loading-non-priority-images-use-lazy-loading-decoding-is-async-and-webp-avif-are-preferred-with-safe-png-fallback",
+      "title": "Update `frontend/src/components/OptimizedImage.tsx` to deliver responsive, non-blocking images: ensure priority images use `fetchpriority=\"high\"` and eager loading; non-priority images use lazy loading; decoding is async; and WebP/AVIF are preferred with safe PNG fallback.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-eliminate-render-blocking-and-unnecessary-work-in-frontend-index-html-update-preloads-to-target-the-optimized-hero-asset-keep-only-truly-critical-preloads-and-ensure-analytics-remains-deferred-and-does-not-block-first-paint",
+      "title": "Eliminate render-blocking and unnecessary work in `frontend/index.html`: update preloads to target the optimized hero asset, keep only truly critical preloads, and ensure analytics remains deferred and does not block first paint.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-seo-robots-txt-validity-by-serving-a-static-robots-txt-from-frontend-public-robots-txt-and-ensure-it-includes-a-correct-sitemap-url-for-https-recomnowindia-2gi-caffeine-xyz-sitemap-xml-remove-or-bypass-any-react-route-based-robots-response-that-could-cause-crawlers-to-receive-html-js-instead-of-plain-text",
+      "title": "Fix SEO robots.txt validity by serving a static `robots.txt` from `frontend/public/robots.txt` and ensure it includes a correct sitemap URL for `https://recomnowindia-2gi.caffeine.xyz/sitemap.xml`. Remove or bypass any React-route-based robots response that could cause crawlers to receive HTML/JS instead of plain text.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-sitemap-delivery-by-serving-a-static-sitemap-xml-from-frontend-public-sitemap-xml-so-crawlers-can-fetch-xml-directly-without-executing-react-ensure-it-uses-https-recomnowindia-2gi-caffeine-xyz-as-the-base-for-urls",
+      "title": "Fix sitemap delivery by serving a static `sitemap.xml` from `frontend/public/sitemap.xml` so crawlers can fetch XML directly without executing React. Ensure it uses `https://recomnowindia-2gi.caffeine.xyz/` as the base for URLs.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-cache-efficiency-for-static-assets-using-the-existing-service-worker-in-frontend-public-sw-js-ensure-generated-image-assets-and-build-assets-are-cached-with-an-appropriate-cache-first-or-stale-while-revalidate-strategy-and-that-old-caches-are-cleaned-up-reliably-to-reduce-repeat-load-transfer-size",
+      "title": "Improve cache efficiency for static assets using the existing service worker in `frontend/public/sw.js`: ensure generated image assets and build assets are cached with an appropriate cache-first or stale-while-revalidate strategy and that old caches are cleaned up reliably to reduce repeat-load transfer size.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-reduce-main-thread-work-and-tbt-by-ensuring-heavy-ui-chunks-remain-code-split-and-only-load-on-demand-admin-panel-login-blog-toaster-and-by-removing-any-remaining-production-console-logging-via-build-configuration",
+      "title": "Reduce main-thread work and TBT by ensuring heavy UI chunks remain code-split and only load on demand (admin panel, login, blog, toaster), and by removing any remaining production console logging via build configuration.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-resolve-accessibility-contrast-warnings-by-adjusting-the-foreground-background-color-pairings-including-muted-text-and-gradient-button-states-so-text-meets-wcag-aa-contrast-on-both-light-and-dark-themes-without-changing-the-overall-brand-feel",
+      "title": "Resolve accessibility contrast warnings by adjusting the foreground/background color pairings (including muted text and gradient/button states) so text meets WCAG AA contrast on both light and dark themes without changing the overall brand feel.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement PageSpeed/Core Web Vitals improvements on the Caffeine.ai site (images, JS/CSS optimization, caching, render-blocking reduction, main-thread/TBT reduction, accessibility contrast fixes, and valid robots.txt).",
+      "reqIds": [],
+      "status": "in_progress"
+    }
+  ],
+  "projectName": "RecomNow India",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
