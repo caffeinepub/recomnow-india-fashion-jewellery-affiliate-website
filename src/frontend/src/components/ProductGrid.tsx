@@ -1,7 +1,7 @@
 import { useState, memo, useCallback, useMemo } from 'react';
 import { useGetFashionProducts, useGetProductsByCategory } from '../hooks/useQueries';
 import { ProductCategory } from '../backend';
-import { ExternalLink, Loader2, Package, Filter, X } from 'lucide-react';
+import { ExternalLink, Loader2, Package, Filter, X, Star, Zap } from 'lucide-react';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
 import { Label } from './ui/label';
@@ -11,32 +11,47 @@ import OptimizedImage from './OptimizedImage';
 
 // Memoized ProductCard component to prevent unnecessary re-renders
 const ProductCard = memo(({ product, getCategoryLabel }: { product: any; getCategoryLabel: (cat: ProductCategory) => string }) => (
-  <article className="group relative bg-card rounded-xl overflow-hidden border border-border hover:border-primary-magenta/50 transition-all hover:shadow-xl card-hover-effect">
-    <div className="aspect-[3/4] overflow-hidden bg-muted flex items-center justify-center p-2">
+  <article className="group relative bg-white rounded-xl overflow-hidden border-2 border-gold-300 hover:border-gold-500 transition-all hover:shadow-2xl card-hover-effect">
+    {/* Badge Overlay */}
+    <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+      {Number(product.discountPercentage) >= 50 && (
+        <div className="bg-gradient-to-r from-gold-600 to-gold-700 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+          <Zap className="h-3 w-3" />
+          {Number(product.discountPercentage)}% OFF
+        </div>
+      )}
+      <div className="bg-navy-800 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+        <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
+        Genuine
+      </div>
+    </div>
+
+    <div className="aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-2">
       <OptimizedImage
         src={product.imageUrl || '/assets/generated/recomnow-logo.dim_200x200.png'}
         alt={`${product.title} - ${getCategoryLabel(product.category)} available at discounted price`}
         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         width={300}
         height={400}
+        loading="lazy"
         onError={(e) => {
           (e.target as HTMLImageElement).src = '/assets/generated/recomnow-logo.dim_200x200.png';
         }}
       />
     </div>
     <div className="p-4 space-y-2">
-      <h3 className="font-semibold text-foreground line-clamp-2 min-h-[3rem]">{product.title}</h3>
+      <h3 className="font-bold text-navy-900 line-clamp-2 min-h-[3rem] text-base">{product.title}</h3>
       {product.description && (
-        <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">{product.description}</p>
+        <p className="text-sm text-navy-700 line-clamp-2 min-h-[2.5rem]">{product.description}</p>
       )}
       <div className="flex items-center gap-2 pt-2">
-        <span className="text-sm text-muted-foreground line-through">
+        <span className="text-sm text-navy-600 line-through">
           ₹{(Number(product.mrp) / 100).toFixed(2)}
         </span>
-        <span className="text-lg font-bold text-primary-magenta">
+        <span className="text-xl font-bold text-gold-700">
           ₹{(Number(product.price) / 100).toFixed(2)}
         </span>
-        <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
+        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 font-bold">
           {Number(product.discountPercentage)}% OFF
         </span>
       </div>
@@ -45,11 +60,11 @@ const ProductCard = memo(({ product, getCategoryLabel }: { product: any; getCate
           href={product.affiliateLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-1 w-full px-4 py-2 rounded-full bg-gradient-rainbow text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center gap-1 w-full px-4 py-3 rounded-full bg-gradient-to-r from-gold-600 to-gold-700 text-white text-sm font-bold hover:from-gold-700 hover:to-gold-800 transition-all shadow-md hover:shadow-lg"
           aria-label={`Shop ${product.title} on Amazon`}
         >
-          Shop Now
-          <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          Shop Now on Amazon
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
         </a>
       </div>
     </div>
@@ -60,7 +75,7 @@ ProductCard.displayName = 'ProductCard';
 
 const LoadingGrid = memo(() => (
   <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
-    <Loader2 className="h-8 w-8 animate-spin text-primary-magenta" aria-hidden="true" />
+    <Loader2 className="h-8 w-8 animate-spin text-gold-600" aria-hidden="true" />
     <span className="sr-only">Loading products...</span>
   </div>
 ));
@@ -68,15 +83,15 @@ const LoadingGrid = memo(() => (
 LoadingGrid.displayName = 'LoadingGrid';
 
 const EmptyState = memo(({ hasActiveFilters, onClearFilters }: { hasActiveFilters: boolean; onClearFilters: () => void }) => (
-  <div className="text-center py-12 bg-muted/10 rounded-xl border border-dashed border-border">
-    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
-    <p className="text-muted-foreground">No products match your filters.</p>
-    <p className="text-sm text-muted-foreground mt-1">Try adjusting your filter criteria.</p>
+  <div className="text-center py-12 bg-gold-50 rounded-xl border-2 border-dashed border-gold-400">
+    <Package className="h-12 w-12 text-gold-700 mx-auto mb-3" aria-hidden="true" />
+    <p className="text-navy-900 font-bold text-lg">No products match your filters.</p>
+    <p className="text-sm text-navy-700 mt-1">Try adjusting your filter criteria.</p>
     {hasActiveFilters && (
       <Button
         onClick={onClearFilters}
         variant="outline"
-        className="mt-4"
+        className="mt-4 border-gold-500 text-gold-800 hover:bg-gold-100 font-semibold"
       >
         Clear Filters
       </Button>
@@ -91,11 +106,12 @@ const ProductGrid = memo(() => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { data: fashionProducts, isLoading: fashionLoading } = useGetFashionProducts();
-  const { data: jewelleryProducts, isLoading: jewelleryLoading } = useGetProductsByCategory(ProductCategory.jewellery);
-  const { data: festiveProducts, isLoading: festiveLoading } = useGetProductsByCategory(ProductCategory.festive);
+  const { data: fashionProducts, isLoading: fashionLoading, error: fashionError } = useGetFashionProducts();
+  const { data: jewelleryProducts, isLoading: jewelleryLoading, error: jewelleryError } = useGetProductsByCategory(ProductCategory.jewellery);
+  const { data: festiveProducts, isLoading: festiveLoading, error: festiveError } = useGetProductsByCategory(ProductCategory.festive);
 
   const isLoading = fashionLoading || jewelleryLoading || festiveLoading;
+  const hasError = fashionError || jewelleryError || festiveError;
 
   const handleCategoryToggle = useCallback((category: ProductCategory) => {
     setSelectedCategories(prev => 
@@ -156,207 +172,166 @@ const ProductGrid = memo(() => {
     return labels[category] || category;
   }, []);
 
-  const fashionCategories = useMemo(() => [
-    ProductCategory.bottomWear,
-    ProductCategory.chunnisDupattas,
-    ProductCategory.dressMaterial,
-    ProductCategory.gowns,
-    ProductCategory.kurtasKurtis,
-    ProductCategory.lehengaCholis,
-    ProductCategory.salwarSuits,
-    ProductCategory.sarees,
-    ProductCategory.westernWear,
-    ProductCategory.sportswear,
-  ], []);
+  const categories = useMemo(() => Object.values(ProductCategory), []);
+
+  const totalProducts = useMemo(() => 
+    filteredFashionProducts.length + filteredJewelleryProducts.length + filteredFestiveProducts.length,
+    [filteredFashionProducts.length, filteredJewelleryProducts.length, filteredFestiveProducts.length]
+  );
+
+  if (hasError) {
+    return (
+      <section className="py-12 px-4" aria-labelledby="products-heading">
+        <div className="container mx-auto">
+          <div className="text-center py-12 bg-red-50 rounded-xl border-2 border-red-300">
+            <p className="text-red-900 font-bold text-lg">Error loading products</p>
+            <p className="text-sm text-red-700 mt-1">Please try refreshing the page.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-16 bg-background" aria-labelledby="products-heading">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-center mb-8">
+    <section className="py-12 px-4 bg-gradient-to-b from-white to-gold-50" aria-labelledby="products-heading">
+      <div className="container mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 id="products-heading" className="text-3xl md:text-4xl font-bold text-navy-900">
+              Featured Products
+            </h2>
+            <p className="text-navy-700 mt-2">
+              {isLoading ? 'Loading...' : `${totalProducts} products available`}
+            </p>
+          </div>
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
-              <Button
-                size="lg"
-                className="bg-gradient-rainbow text-white hover:opacity-90 transition-opacity shadow-lg"
-                aria-label="Open product filters"
+              <Button 
+                variant="outline" 
+                className="border-gold-500 text-gold-800 hover:bg-gold-100 font-semibold"
               >
-                <Filter className="h-5 w-5 mr-2" aria-hidden="true" />
-                Filter Products
-                {hasActiveFilters && (
-                  <span className="ml-2 px-2 py-0.5 bg-white/20 rounded-full text-xs">
-                    Active
-                  </span>
-                )}
+                <Filter className="h-4 w-4 mr-2" />
+                Filters {hasActiveFilters && `(${selectedCategories.length > 0 ? selectedCategories.length : ''})`}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetContent className="overflow-y-auto bg-white">
               <SheetHeader>
-                <SheetTitle className="text-2xl font-bold">Filter Products</SheetTitle>
+                <SheetTitle className="text-navy-900">Filter Products</SheetTitle>
               </SheetHeader>
-              
-              <div className="mt-8 space-y-8">
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Category</Label>
+              <div className="py-6 space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <Label className="text-base font-bold text-navy-900">Categories</Label>
+                    {selectedCategories.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategories([])}
+                        className="text-gold-700 hover:text-gold-800 hover:bg-gold-50"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                   <div className="space-y-3">
-                    {fashionCategories.map((category) => (
+                    {categories.map((category) => (
                       <div key={category} className="flex items-center space-x-2">
                         <Checkbox
                           id={category}
                           checked={selectedCategories.includes(category)}
                           onCheckedChange={() => handleCategoryToggle(category)}
+                          className="border-gold-500 data-[state=checked]:bg-gold-600"
                         />
-                        <Label htmlFor={category} className="cursor-pointer font-normal">
+                        <label
+                          htmlFor={category}
+                          className="text-sm font-medium text-navy-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
                           {getCategoryLabel(category)}
-                        </Label>
+                        </label>
                       </div>
                     ))}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={ProductCategory.jewellery}
-                        checked={selectedCategories.includes(ProductCategory.jewellery)}
-                        onCheckedChange={() => handleCategoryToggle(ProductCategory.jewellery)}
-                      />
-                      <Label htmlFor={ProductCategory.jewellery} className="cursor-pointer font-normal">
-                        Jewellery
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={ProductCategory.festive}
-                        checked={selectedCategories.includes(ProductCategory.festive)}
-                        onCheckedChange={() => handleCategoryToggle(ProductCategory.festive)}
-                      />
-                      <Label htmlFor={ProductCategory.festive} className="cursor-pointer font-normal">
-                        Festive
-                      </Label>
-                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Price Range</Label>
-                  <div className="space-y-4">
-                    <Slider
-                      min={0}
-                      max={10000}
-                      step={100}
-                      value={priceRange}
-                      onValueChange={(value) => setPriceRange(value as [number, number])}
-                      className="w-full"
-                      aria-label="Price range filter"
-                    />
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>₹{priceRange[0]}</span>
-                      <span>₹{priceRange[1]}</span>
-                    </div>
-                  </div>
+                <div>
+                  <Label className="text-base font-bold mb-4 block text-navy-900">
+                    Price Range: ₹{priceRange[0]} - ₹{priceRange[1]}
+                  </Label>
+                  <Slider
+                    min={0}
+                    max={10000}
+                    step={100}
+                    value={priceRange}
+                    onValueChange={(value) => setPriceRange(value as [number, number])}
+                    className="mt-2"
+                  />
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={handleClearFilters}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Clear All
-                  </Button>
+                <div className="pt-4 space-y-2">
                   <SheetClose asChild>
-                    <Button className="flex-1 bg-gradient-rainbow text-white hover:opacity-90">
+                    <Button className="w-full bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold">
                       Apply Filters
                     </Button>
                   </SheetClose>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="outline"
+                      className="w-full border-gold-500 text-gold-800 hover:bg-gold-100 font-semibold"
+                      onClick={handleClearFilters}
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
                 </div>
               </div>
             </SheetContent>
           </Sheet>
         </div>
 
-        {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-2 mb-6 justify-center">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
-            {selectedCategories.map((category) => (
-              <div key={category} className="flex items-center gap-1 px-3 py-1 bg-primary-magenta/10 text-primary-magenta rounded-full text-sm">
-                {getCategoryLabel(category)}
-                <button
-                  onClick={() => handleCategoryToggle(category)}
-                  className="ml-1 hover:bg-primary-magenta/20 rounded-full p-0.5"
-                  aria-label={`Remove ${getCategoryLabel(category)} filter`}
-                >
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            ))}
-            {(priceRange[0] > 0 || priceRange[1] < 10000) && (
-              <div className="flex items-center gap-1 px-3 py-1 bg-primary-magenta/10 text-primary-magenta rounded-full text-sm">
-                ₹{priceRange[0]} - ₹{priceRange[1]}
-                <button
-                  onClick={() => setPriceRange([0, 10000])}
-                  className="ml-1 hover:bg-primary-magenta/20 rounded-full p-0.5"
-                  aria-label="Remove price range filter"
-                >
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {isLoading ? (
           <LoadingGrid />
+        ) : totalProducts === 0 ? (
+          <EmptyState hasActiveFilters={hasActiveFilters} onClearFilters={handleClearFilters} />
         ) : (
-          <div className="space-y-16">
+          <div className="space-y-12">
             {filteredFashionProducts.length > 0 && (
-              <section id="fashion" className="space-y-6">
-                <header className="text-center space-y-2">
-                  <h2 id="products-heading" className="text-3xl md:text-4xl font-bold text-foreground">
-                    Latest Fashion Collection
-                  </h2>
-                  <p className="text-muted-foreground">Affordable Styles Online</p>
-                </header>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
+                  Fashion Collection
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredFashionProducts.map((product) => (
-                    <ProductCard key={Number(product.id)} product={product} getCategoryLabel={getCategoryLabel} />
+                    <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
                   ))}
                 </div>
-              </section>
+              </div>
             )}
 
             {filteredJewelleryProducts.length > 0 && (
-              <section id="jewellery" className="space-y-6">
-                <header className="text-center space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                    Costume Jewellery Under ₹499
-                  </h2>
-                  <p className="text-muted-foreground">Trendy Accessories</p>
-                </header>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
+                  Jewellery Collection
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredJewelleryProducts.map((product) => (
-                    <ProductCard key={Number(product.id)} product={product} getCategoryLabel={getCategoryLabel} />
+                    <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
                   ))}
                 </div>
-              </section>
+              </div>
             )}
 
             {filteredFestiveProducts.length > 0 && (
-              <section id="festive" className="space-y-6">
-                <header className="text-center space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                    Festive Offers
-                  </h2>
-                  <p className="text-muted-foreground">Sarees & Jewellery</p>
-                </header>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
+                  Festive Collection
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredFestiveProducts.map((product) => (
-                    <ProductCard key={Number(product.id)} product={product} getCategoryLabel={getCategoryLabel} />
+                    <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
                   ))}
                 </div>
-              </section>
-            )}
-
-            {filteredFashionProducts.length === 0 && 
-             filteredJewelleryProducts.length === 0 && 
-             filteredFestiveProducts.length === 0 && (
-              <EmptyState hasActiveFilters={hasActiveFilters} onClearFilters={handleClearFilters} />
+              </div>
             )}
           </div>
         )}

@@ -65,6 +65,28 @@ export default {
                     'accent-foreground': 'oklch(var(--sidebar-accent-foreground))',
                     border: 'oklch(var(--sidebar-border))',
                     ring: 'oklch(var(--sidebar-ring))'
+                },
+                gold: {
+                    50: 'oklch(var(--gold-50))',
+                    100: 'oklch(var(--gold-100))',
+                    200: 'oklch(var(--gold-200))',
+                    300: 'oklch(var(--gold-300))',
+                    400: 'oklch(var(--gold-400))',
+                    500: 'oklch(var(--gold-500))',
+                    600: 'oklch(var(--gold-600))',
+                    700: 'oklch(var(--gold-700))'
+                },
+                navy: {
+                    50: 'oklch(var(--navy-50))',
+                    100: 'oklch(var(--navy-100))',
+                    200: 'oklch(var(--navy-200))',
+                    300: 'oklch(var(--navy-300))',
+                    400: 'oklch(var(--navy-400))',
+                    500: 'oklch(var(--navy-500))',
+                    600: 'oklch(var(--navy-600))',
+                    700: 'oklch(var(--navy-700))',
+                    800: 'oklch(var(--navy-800))',
+                    900: 'oklch(var(--navy-900))'
                 }
             },
             borderRadius: {
@@ -74,6 +96,9 @@ export default {
             },
             boxShadow: {
                 xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+            },
+            fontFamily: {
+                sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif']
             },
             keyframes: {
                 'accordion-down': {

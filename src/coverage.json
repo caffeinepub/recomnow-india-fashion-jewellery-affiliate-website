@@ -1,124 +1,47 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T09:14:52.237Z",
+  "generatedAt": "2026-02-21T09:13:26.938Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 8,
-    "implemented": 8,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Resolve accessibility contrast warnings by adjusting the foreground/background color pairings (including muted text and gradient/button states) so text meets WCAG AA contrast on both light and dark themes without changing the overall brand feel.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/index.css"
-        ],
-        "matchedFiles": [
-          "frontend/src/index.css"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Replace above-the-fold critical image assets with modern compressed formats and update the app to prefer those formats to improve LCP/FCP without changing layout.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/assets/generated/recomnow-logo.dim_200x200.webp",
-          "frontend/public/assets/generated/recomnow-logo.dim_200x200.avif",
-          "frontend/public/assets/generated/hero-banner.dim_1200x400.webp",
-          "frontend/public/assets/generated/hero-banner.dim_1200x400.avif",
-          "frontend/src/components/Hero.tsx",
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/Footer.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/public/assets/generated/recomnow-logo.dim_200x200.webp",
-          "frontend/public/assets/generated/recomnow-logo.dim_200x200.avif",
-          "frontend/public/assets/generated/hero-banner.dim_1200x400.webp",
-          "frontend/public/assets/generated/hero-banner.dim_1200x400.avif",
-          "frontend/src/components/Footer.tsx"
-        ]
-      },
-      {
         "id": "REQ-4",
-        "summary": "Update `frontend/src/components/OptimizedImage.tsx` to deliver responsive, non-blocking images: ensure priority images use `fetchpriority=\"high\"` and eager loading; non-priority images use lazy loading; decoding is async; and WebP/AVIF are preferred with safe PNG fallback.",
+        "summary": "Resize the SSL Protected badge container at the top of the page to display the full badge without cutoff",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/OptimizedImage.tsx",
-          "frontend/src/components/ProductGrid.tsx",
-          "frontend/src/components/BlogTeaser.tsx"
+          "frontend/src/components/Hero.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/OptimizedImage.tsx",
-          "frontend/src/components/BlogTeaser.tsx"
+          "frontend/src/components/Hero.tsx"
         ]
       },
       {
         "id": "REQ-5",
-        "summary": "Eliminate render-blocking and unnecessary work in `frontend/index.html`: update preloads to target the optimized hero asset, keep only truly critical preloads, and ensure analytics remains deferred and does not block first paint.",
+        "summary": "Resize the Quality/Verified badge container at the top of the page to display the full badge without cutoff",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/Hero.tsx"
         ],
         "matchedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/Hero.tsx"
         ]
       },
       {
         "id": "REQ-6",
-        "summary": "Fix SEO robots.txt validity by serving a static `robots.txt` from `frontend/public/robots.txt` and ensure it includes a correct sitemap URL for `https://recomnowindia-2gi.caffeine.xyz/sitemap.xml`. Remove or bypass any React-route-based robots response that could cause crawlers to receive HTML/JS instead of plain text.",
+        "summary": "Resize all badge containers at the bottom of the page (footer area) to display badges with full visibility",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/robots.txt",
-          "frontend/src/App.tsx",
-          "frontend/src/components/RobotsTxt.tsx"
+          "frontend/src/components/Footer.tsx",
+          "frontend/src/components/TrustBadges.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/robots.txt",
-          "frontend/src/App.tsx",
-          "frontend/src/components/RobotsTxt.tsx"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Fix sitemap delivery by serving a static `sitemap.xml` from `frontend/public/sitemap.xml` so crawlers can fetch XML directly without executing React. Ensure it uses `https://recomnowindia-2gi.caffeine.xyz/` as the base for URLs.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/sitemap.xml",
-          "frontend/src/App.tsx",
-          "frontend/src/components/Sitemap.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/public/sitemap.xml",
-          "frontend/src/App.tsx",
-          "frontend/src/components/Sitemap.tsx"
-        ]
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Improve cache efficiency for static assets using the existing service worker in `frontend/public/sw.js`: ensure generated image assets and build assets are cached with an appropriate cache-first or stale-while-revalidate strategy and that old caches are cleaned up reliably to reduce repeat-load transfer size.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/sw.js"
-        ],
-        "matchedFiles": [
-          "frontend/public/sw.js"
-        ]
-      },
-      {
-        "id": "REQ-9",
-        "summary": "Reduce main-thread work and TBT by ensuring heavy UI chunks remain code-split and only load on demand (admin panel, login, blog, toaster), and by removing any remaining production console logging via build configuration.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/vite.config.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/vite.config.ts"
+          "frontend/src/components/TrustBadges.tsx"
         ]
       }
     ]
@@ -128,22 +51,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/hero-banner.dim_1200x400.avif",
-    "frontend/public/assets/generated/hero-banner.dim_1200x400.webp",
-    "frontend/public/assets/generated/recomnow-logo.dim_200x200.avif",
-    "frontend/public/assets/generated/recomnow-logo.dim_200x200.webp",
-    "frontend/public/robots.txt",
-    "frontend/public/sitemap.xml",
-    "frontend/public/sw.js",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BlogTeaser.tsx",
-    "frontend/src/components/Footer.tsx",
-    "frontend/src/components/OptimizedImage.tsx",
-    "frontend/src/components/RobotsTxt.tsx",
-    "frontend/src/components/Sitemap.tsx",
-    "frontend/src/index.css",
-    "frontend/vite.config.ts",
+    "frontend/src/components/Hero.tsx",
+    "frontend/src/components/TrustBadges.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

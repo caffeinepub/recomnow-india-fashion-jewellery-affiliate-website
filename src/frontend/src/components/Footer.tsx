@@ -1,172 +1,163 @@
-import { useState } from 'react';
-import { SiFacebook } from 'react-icons/si';
-import { MessageCircle, Mail, Heart } from 'lucide-react';
+import { memo, useState } from 'react';
+import { MapPin, Mail, Heart } from 'lucide-react';
+import { SiFacebook, SiInstagram, SiX } from 'react-icons/si';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { useSubscribeNewsletter } from '../hooks/useQueries';
-import PageModal from './PageModal';
-import OptimizedImage from './OptimizedImage';
+import { toast } from 'sonner';
+import TrustBadges from './TrustBadges';
 
-export default function Footer() {
+const Footer = memo(() => {
   const [email, setEmail] = useState('');
   const subscribeNewsletter = useSubscribeNewsletter();
-  const [openPage, setOpenPage] = useState<string | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      subscribeNewsletter.mutate(email, {
-        onSuccess: () => setEmail(''),
-      });
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    try {
+      await subscribeNewsletter.mutateAsync(email);
+      setEmail('');
+    } catch (error) {
+      // Error already handled by mutation
     }
   };
-
-  const quickLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Fashion', href: '#fashion' },
-    { name: 'Jewellery', href: '#jewellery' },
-    { name: 'Blog', href: '#blog' },
-  ];
-
-  const legalLinks = [
-    { name: 'Privacy Policy', key: 'privacy' },
-    { name: 'Terms of Service', key: 'terms' },
-    { name: 'Contact Us', key: 'contact' },
-  ];
 
   const currentYear = new Date().getFullYear();
   const appIdentifier = typeof window !== 'undefined' 
     ? encodeURIComponent(window.location.hostname) 
-    : 'recomnowindia-2gi.caffeine.xyz';
+    : 'recomnow-india';
 
   return (
-    <footer className="bg-muted/30 border-t border-border">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <OptimizedImage
-                src="/assets/generated/recomnow-logo.dim_200x200.png"
-                alt="RecomNow India Logo"
-                className="h-12 w-12 rounded-full"
-                width={200}
-                height={200}
-              />
-              <div>
-                <h3 className="font-bold text-lg text-primary-magenta">RecomNow India</h3>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Your guide to chic fashion, costume jewellery, and trendsetting accessories
+    <footer className="bg-navy-900 text-white pt-12 pb-6">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-blue-500">Amazon RecomNow India</h3>
+            <p className="text-blue-500 mb-4 leading-relaxed">
+              Your trusted guide to premium fashion, costume jewellery, and trendsetting accessories from Amazon.
             </p>
-            <div className="flex gap-4">
-              <a
-                href="https://www.facebook.com/profile.php?id=61572088088088"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary-magenta transition-colors"
-                aria-label="Visit RecomNow India on Facebook"
-              >
-                <SiFacebook className="h-5 w-5" aria-hidden="true" />
-              </a>
-              <a
-                href="https://wa.me/918232850139"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary-magenta transition-colors"
-                aria-label="Contact RecomNow India on WhatsApp"
-              >
-                <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              </a>
+            <div className="flex items-center gap-2 text-blue-500">
+              <MapPin className="h-4 w-4 text-gold-400" aria-hidden="true" />
+              <span className="text-sm font-medium">Based in Kolkata, India</span>
             </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Quick Links</h4>
-            <nav className="space-y-2" aria-label="Footer quick links">
-              {quickLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="block text-sm text-muted-foreground hover:text-primary-magenta transition-colors"
-                >
-                  {link.name}
+            <h3 className="text-xl font-bold mb-4 text-blue-500">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <a href="#products" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
+                  Products
                 </a>
-              ))}
-            </nav>
+              </li>
+              <li>
+                <a href="#blog" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
+                  About Us
+                </a>
+              </li>
+            </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Legal</h4>
-            <nav className="space-y-2" aria-label="Footer legal links">
-              {legalLinks.map((link) => (
-                <button
-                  key={link.key}
-                  onClick={() => setOpenPage(link.key)}
-                  className="block text-sm text-muted-foreground hover:text-primary-magenta transition-colors text-left"
-                >
-                  {link.name}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4 text-foreground">Newsletter</h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              Subscribe for the latest deals and fashion tips
+            <h3 className="text-xl font-bold mb-4 text-blue-500">Newsletter</h3>
+            <p className="text-blue-500 mb-4 text-sm">
+              Get the latest deals and fashion tips delivered to your inbox.
             </p>
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address for newsletter subscription
-              </label>
-              <input
-                id="newsletter-email"
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+              <Input
                 type="email"
+                placeholder="Your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 rounded-full border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-magenta"
-                required
-                aria-required="true"
+                className="bg-white text-navy-900 border-gold-400 placeholder:text-navy-500 font-medium"
+                disabled={subscribeNewsletter.isPending}
               />
-              <button
+              <Button
                 type="submit"
                 disabled={subscribeNewsletter.isPending}
-                className="w-full px-4 py-2 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                aria-label="Subscribe to newsletter"
+                className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold whitespace-nowrap"
               >
                 {subscribeNewsletter.isPending ? 'Subscribing...' : 'Subscribe'}
-              </button>
+              </Button>
             </form>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
-            © {currentYear} RecomNow India. All rights reserved.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Built with <Heart className="inline h-4 w-4 text-red-500" aria-label="love" /> using{' '}
+        <div className="border-t border-navy-700 pt-6 mb-6 pb-12">
+          <TrustBadges 
+            badges={['ssl', 'amazon-verified', 'genuine', 'return-guarantee', 'secure-checkout', 'kolkata']} 
+            layout="horizontal" 
+          />
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t border-navy-700 pt-6">
+          <div className="flex items-center gap-4">
             <a
-              href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appIdentifier}`}
+              href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary-magenta hover:underline"
+              className="text-navy-100 hover:text-gold-400 transition-colors"
+              aria-label="Follow us on Facebook"
             >
-              caffeine.ai
+              <SiFacebook className="h-5 w-5" />
             </a>
-          </p>
-          <p className="text-xs text-muted-foreground italic">
-            As an affiliate, RecomNow may earn from qualifying purchases.
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-navy-100 hover:text-gold-400 transition-colors"
+              aria-label="Follow us on Instagram"
+            >
+              <SiInstagram className="h-5 w-5" />
+            </a>
+            <a
+              href="https://x.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-navy-100 hover:text-gold-400 transition-colors"
+              aria-label="Follow us on X (Twitter)"
+            >
+              <SiX className="h-5 w-5" />
+            </a>
+          </div>
+
+          <div className="text-center md:text-right">
+            <p className="text-sm text-navy-100 mb-2 font-medium">
+              © {currentYear} Amazon RecomNow India. All rights reserved.
+            </p>
+            <p className="text-xs text-navy-200 flex items-center justify-center md:justify-end gap-1">
+              Built with <Heart className="h-3 w-3 text-red-400 fill-red-400" aria-label="love" /> using{' '}
+              <a
+                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appIdentifier}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gold-400 hover:text-gold-300 transition-colors font-semibold"
+              >
+                caffeine.ai
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-navy-700">
+          <p className="text-xs text-navy-200 text-center leading-relaxed">
+            <strong className="text-navy-100">Affiliate Disclosure:</strong> As an Amazon Associate, Amazon RecomNow India may earn from qualifying purchases. 
+            We only recommend products we believe will add value to our readers.
           </p>
         </div>
       </div>
-
-      {openPage && (
-        <PageModal
-          pageKey={openPage}
-          onClose={() => setOpenPage(null)}
-        />
-      )}
     </footer>
   );
-}
+});
+
+Footer.displayName = 'Footer';
+
+export default Footer;

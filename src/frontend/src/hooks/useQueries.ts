@@ -4,6 +4,10 @@ import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 import type { ProductInput, ProductCategory } from '../backend';
 
+// Optimized stale time and cache time for better performance
+const DEFAULT_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_CACHE_TIME = 10 * 60 * 1000; // 10 minutes
+
 // Admin Check Query
 export function useIsCallerAdmin() {
   const { actor, isFetching } = useActor();
@@ -20,6 +24,8 @@ export function useIsCallerAdmin() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 1,
   });
 }
@@ -40,6 +46,8 @@ export function useGetProducts() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -59,6 +67,8 @@ export function useGetFashionProducts() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -78,6 +88,8 @@ export function useGetProductsByCategory(category: ProductCategory) {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -101,6 +113,8 @@ export function useFilterProducts(
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -205,6 +219,8 @@ export function useGetBlogPosts() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -224,6 +240,8 @@ export function useGetFeaturedBlogPosts() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -243,6 +261,8 @@ export function useGetBlogPostById(id: bigint) {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -395,6 +415,8 @@ export function useGetNewsletterSignups() {
       }
     },
     enabled: !!actor && !isFetching && !!sessionToken,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -415,6 +437,8 @@ export function useGetPage(pageKey: string) {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 1,
   });
 }
@@ -436,6 +460,8 @@ export function useGetAllPages() {
       }
     },
     enabled: !!actor && !isFetching && !!sessionToken,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -484,6 +510,8 @@ export function useGetSitemap() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }
@@ -504,6 +532,8 @@ export function useGetRobotsTxt() {
       }
     },
     enabled: !!actor && !isFetching,
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_CACHE_TIME,
     retry: 2,
   });
 }

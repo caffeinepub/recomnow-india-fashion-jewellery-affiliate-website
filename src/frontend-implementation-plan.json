@@ -1,196 +1,58 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "RecomNow India — Mobile PageSpeed/Core Web Vitals overhaul (images, caching, render-blocking, robots/sitemap, contrast)",
+  "title": "Fix badge visibility at top and bottom",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Introduce optimized above-the-fold hero/logo assets (AVIF/WebP) and switch UI to prefer them without layout/CLS changes while keeping below-the-fold images lazy.",
+      "id": "REQ-4",
+      "summary": "Resize the SSL Protected badge container at the top of the page to display the full badge without cutoff",
       "acceptanceCriteria": [
-        "New optimized hero and logo assets exist in the repo as static files and are referenced by the UI.",
-        "Hero image still renders immediately on first load (no blank/flash), and its layout dimensions remain stable (no CLS regression).",
-        "All non-critical images remain lazy-loaded below the fold."
+        "SSL Protected badge at top is fully visible without any portion being cut off",
+        "Badge container height accommodates the complete badge image",
+        "Badge maintains proper aspect ratio and image quality"
       ],
       "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/recomnow-logo.dim_200x200.webp",
-          "operation": "create",
-          "description": "Add the generated WebP logo asset at the required path for above-the-fold rendering."
-        },
-        {
-          "path": "frontend/public/assets/generated/recomnow-logo.dim_200x200.avif",
-          "operation": "create",
-          "description": "Add the generated AVIF logo asset at the required path for above-the-fold rendering."
-        },
-        {
-          "path": "frontend/public/assets/generated/hero-banner.dim_1200x400.webp",
-          "operation": "create",
-          "description": "Add the generated WebP hero banner asset at the required path for improved LCP."
-        },
-        {
-          "path": "frontend/public/assets/generated/hero-banner.dim_1200x400.avif",
-          "operation": "create",
-          "description": "Add the generated AVIF hero banner asset at the required path for improved LCP."
-        },
         {
           "path": "frontend/src/components/Hero.tsx",
           "operation": "modify",
-          "description": "Update Hero to continue using a stable width/height and layout, but rely on OptimizedImage’s modern-format preference for the above-the-fold hero banner (ensure no opacity/blank flash for priority hero)."
-        },
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Ensure the above-the-fold logo uses OptimizedImage with explicit width/height and priority behavior so modern formats are preferred without changing layout."
-        },
-        {
-          "path": "frontend/src/components/Footer.tsx",
-          "operation": "modify",
-          "description": "Ensure footer logo continues using OptimizedImage with explicit width/height; keep it non-priority so it remains lazy-loaded if below the fold."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Enhance OptimizedImage to serve responsive modern formats (AVIF/WebP) with safe PNG fallback, correct eager/lazy + fetch priority behavior, async decoding, and layout stability.",
-      "acceptanceCriteria": [
-        "Priority images render with eager loading and high fetch priority, and non-priority images load lazily when near viewport.",
-        "When a browser supports WebP/AVIF it receives those; otherwise it receives the PNG fallback.",
-        "All images rendered through `OptimizedImage` include explicit width/height (or equivalent aspect-ratio stability) to avoid layout shifts."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/OptimizedImage.tsx",
-          "operation": "modify",
-          "description": "Update OptimizedImage to: (1) prefer AVIF then WebP via <picture><source> ordering for local PNG assets, (2) keep PNG fallback, (3) set priority images to loading=\"eager\" and fetchpriority=\"high\", (4) set non-priority to lazy loading + intersection-based in-view gating, (5) decoding=\"async\" for all, (6) enforce layout stability (require width/height or apply aspect-ratio fallback) and ensure priority images don’t start hidden (avoid opacity-0 flash)."
-        },
-        {
-          "path": "frontend/src/components/ProductGrid.tsx",
-          "operation": "modify",
-          "description": "Audit and update all OptimizedImage usages in product cards/listing to ensure explicit width/height (or a stable aspect-ratio strategy) is always provided and images remain non-priority/lazy below the fold."
-        },
-        {
-          "path": "frontend/src/components/BlogTeaser.tsx",
-          "operation": "modify",
-          "description": "Audit and update any OptimizedImage usages in blog teaser tiles (if present) to ensure explicit width/height (or stable aspect-ratio) and non-priority lazy loading for below-the-fold images."
+          "description": "Increase the height of the SSL Protected badge container in the top trust badges section to prevent cutoff. The badge image at frontend/public/assets/generated/badge-ssl.dim_200x80.png requires adequate vertical space. Adjust container styling to use explicit height values (e.g., h-20 or h-24 instead of h-16) and ensure the image maintains its aspect ratio without cropping."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Remove/limit render-blocking work in index.html by preloading only truly critical optimized hero asset(s) and ensuring analytics is deferred/non-blocking.",
+      "summary": "Resize the Quality/Verified badge container at the top of the page to display the full badge without cutoff",
       "acceptanceCriteria": [
-        "`frontend/index.html` preloads the optimized hero asset used by the Hero component (and does not preload unused formats).",
-        "No additional synchronous scripts/styles are introduced that would block initial render."
+        "Quality badge at top is fully visible without any portion being cut off",
+        "Badge container height accommodates the complete badge image",
+        "Badge maintains proper alignment with other top badges"
       ],
       "file_operations": [
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/components/Hero.tsx",
           "operation": "modify",
-          "description": "Adjust <head> resource hints to preload only the critical above-the-fold hero asset in modern format(s) (AVIF preferred, optional WebP fallback) matching the assets used by Hero/OptimizedImage; remove PNG preloads that are no longer critical. Ensure Google Analytics loading/init remains deferred (e.g., async/defer and/or moved to end of body) and does not block first paint."
+          "description": "Increase the height of the Amazon Verified badge container in the top trust badges section to prevent cutoff. The badge image at frontend/public/assets/generated/badge-amazon-verified.dim_200x80.png requires adequate vertical space. Adjust container styling to match the SSL badge height fix and ensure consistent alignment across all three top badges (SSL, Verified, Fast Delivery)."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Serve a valid static robots.txt from public assets and remove the SPA React route-based robots response.",
+      "summary": "Resize all badge containers at the bottom of the page (footer area) to display badges with full visibility",
       "acceptanceCriteria": [
-        "Requesting `/robots.txt` returns a plain-text robots file (not an HTML shell) when deployed.",
-        "The robots file contains `User-agent: *`, an allow rule, and a `Sitemap: https://recomnowindia-2gi.caffeine.xyz/sitemap.xml` line.",
-        "The SPA no longer relies on a React route that rewrites the document to produce robots.txt."
+        "All footer badges are fully visible without cutoff",
+        "Badge containers properly sized to show complete badge images",
+        "Badges maintain consistent spacing and alignment in footer"
       ],
       "file_operations": [
         {
-          "path": "frontend/public/robots.txt",
-          "operation": "create",
-          "description": "Add a static plain-text robots.txt containing: User-agent: *, Allow: /, and Sitemap: https://recomnowindia-2gi.caffeine.xyz/sitemap.xml."
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "modify",
+          "description": "Increase the height of all footer badge containers (SSL, Amazon Verified, Genuine, Return Guarantee, Secure Checkout, Discount) to prevent cutoff. The badge images at frontend/public/assets/generated/badge-*.dim_200x80.png require adequate vertical space. Adjust the TrustBadges component props or wrapper styling to use larger height values (e.g., h-20 or h-24) and ensure all badges render with proper spacing and alignment in the footer section."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/TrustBadges.tsx",
           "operation": "modify",
-          "description": "Remove SPA routing/special-case rendering for /robots.txt so crawlers receive the static public file instead of HTML/JS."
-        },
-        {
-          "path": "frontend/src/components/RobotsTxt.tsx",
-          "operation": "delete",
-          "description": "Remove the React-based robots responder component to prevent accidental HTML/JS delivery for /robots.txt."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Serve a valid static sitemap.xml from public assets and remove the SPA React route-based sitemap response.",
-      "acceptanceCriteria": [
-        "Requesting `/sitemap.xml` returns valid XML (not HTML/JS) when deployed.",
-        "The sitemap includes at minimum the homepage and key sections/anchors that are meaningful as standalone URLs (only include valid URL entries).",
-        "The SPA no longer depends on a React route that rewrites the document to produce the sitemap."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/sitemap.xml",
-          "operation": "create",
-          "description": "Add a static sitemap.xml with base URLs under https://recomnowindia-2gi.caffeine.xyz/ (at minimum include the homepage as a valid <url><loc> entry; include only standalone valid URLs)."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Remove SPA routing/special-case rendering for /sitemap.xml so crawlers fetch the static XML directly without executing React."
-        },
-        {
-          "path": "frontend/src/components/Sitemap.tsx",
-          "operation": "delete",
-          "description": "Remove the React-based sitemap responder component to prevent accidental HTML/JS delivery for /sitemap.xml."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Improve cache efficiency for static assets via the existing service worker: cache build assets and generated images effectively, clean old caches reliably, and avoid caching robots/sitemap incorrectly.",
-      "acceptanceCriteria": [
-        "On repeat visits, core static assets (JS/CSS/logo/hero) are served from the service worker cache when available.",
-        "Cache versioning and cleanup prevents unbounded cache growth and removes outdated cached entries after deploys.",
-        "Robots.txt and sitemap.xml are not incorrectly cached in a way that would cause stale/invalid content to persist after updates."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/sw.js",
-          "operation": "modify",
-          "description": "Update service worker caching to: (1) include new AVIF/WebP hero+logo in the pre-cached static asset list, (2) treat build assets (JS/CSS under typical build asset paths) with cache-first or stale-while-revalidate to reduce repeat-load transfer, (3) add AVIF to the static asset match pattern, (4) implement stronger cache versioning and cleanup, and (5) explicitly bypass caching for /robots.txt and /sitemap.xml (always network) to avoid stale SEO files."
-        }
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "summary": "Keep heavy UI code-split and on-demand, and ensure production builds drop console log/info/debug output.",
-      "acceptanceCriteria": [
-        "Non-critical UI modules remain lazy-loaded and do not increase the initial JS payload for the homepage route.",
-        "Production builds do not emit `console.log/info/debug` statements (confirmed by terser configuration behavior)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify non-critical modules remain code-split and only loaded on demand (admin panel/login, blog, toaster). While removing the /robots.txt and /sitemap.xml SPA handling, preserve existing lazy imports for other non-critical UI."
-        },
-        {
-          "path": "frontend/vite.config.ts",
-          "operation": "modify",
-          "description": "Confirm/adjust terser configuration so production builds drop console.log/info/debug (keep drop_console/pure_funcs aligned with the acceptance criteria)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "summary": "Fix WCAG AA contrast issues by tuning theme variables (muted text and gradient/button states) for readable text in light/dark modes without changing layout or overall brand feel.",
-      "acceptanceCriteria": [
-        "Common text styles (body, muted text, button text, links) meet WCAG AA contrast on the default background in light mode.",
-        "Dark mode text contrast remains acceptable and no key UI text becomes harder to read.",
-        "Visual styling remains consistent with current brand gradients and theme variables (no layout changes required)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Adjust the light/dark theme CSS variables to improve contrast (especially --muted-foreground and any brand color stops used in gradients/buttons) while preserving existing gradients and overall brand styling; avoid layout-affecting changes."
+          "description": "Adjust the badge image container styling to prevent cutoff when rendering badges. Update the wrapper div or image element classes to use explicit height values that accommodate the full badge dimensions (200x80px). Ensure the component properly handles both horizontal (footer) and vertical layouts while maintaining aspect ratios and preventing overflow clipping."
         }
       ]
     }

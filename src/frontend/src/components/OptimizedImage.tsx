@@ -7,6 +7,7 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  loading?: 'lazy' | 'eager';
   sizes?: string;
   onError?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
 }
@@ -18,6 +19,7 @@ export default function OptimizedImage({
   width,
   height,
   priority = false,
+  loading,
   sizes,
   onError,
 }: OptimizedImageProps) {
@@ -61,10 +63,8 @@ export default function OptimizedImage({
     setHasError(true);
     const img = e.currentTarget;
     
-    // Try fallback chain: AVIF -> WebP -> PNG
-    if (img.src.includes('.avif')) {
-      img.src = img.src.replace('.avif', '.webp');
-    } else if (img.src.includes('.webp')) {
+    // Try fallback chain: WebP -> PNG
+    if (img.src.includes('.webp')) {
       img.src = img.src.replace('.webp', '.png');
     } else if (onError) {
       onError(e);
@@ -77,27 +77,23 @@ export default function OptimizedImage({
   // For external URLs, use as-is; for local assets, generate responsive versions
   const isExternalUrl = src.startsWith('http://') || src.startsWith('https://');
 
-  // Prefer AVIF, then WebP for local PNG assets
-  const avifSrc = !isExternalUrl && src.endsWith('.png') ? src.replace('.png', '.avif') : null;
+  // Prefer WebP for local PNG assets
   const webpSrc = !isExternalUrl && src.endsWith('.png') ? src.replace('.png', '.webp') : null;
   const fallbackSrc = src;
+
+  // Determine loading attribute
+  const loadingAttr = loading || (priority ? 'eager' : 'lazy');
 
   // For priority images, ensure they're visible immediately (no opacity transition)
   const imageClassName = priority 
     ? className 
     : `${className} ${!isLoaded && isInView ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`;
 
+  // Inline aspect-ratio style for layout stability
+  const aspectRatioStyle = width && height ? { aspectRatio: `${width} / ${height}` } : {};
+
   return (
     <picture>
-      {/* AVIF format for best compression (modern browsers) */}
-      {isInView && !hasError && avifSrc && (
-        <source
-          type="image/avif"
-          srcSet={avifSrc}
-          sizes={defaultSizes}
-        />
-      )}
-      
       {/* WebP format for good compression (most browsers) */}
       {isInView && !hasError && webpSrc && (
         <source
@@ -114,13 +110,14 @@ export default function OptimizedImage({
         alt={alt}
         width={width}
         height={height}
-        loading={priority ? 'eager' : 'lazy'}
+        loading={loadingAttr}
         decoding="async"
         fetchPriority={priority ? 'high' : 'auto'}
         className={imageClassName}
         onLoad={handleLoad}
         onError={handleError}
         style={{
+          ...aspectRatioStyle,
           contentVisibility: priority ? 'visible' : 'auto',
           containIntrinsicSize: width && height ? `${width}px ${height}px` : 'auto',
         }}
