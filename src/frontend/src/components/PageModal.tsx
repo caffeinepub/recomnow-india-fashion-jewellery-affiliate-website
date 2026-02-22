@@ -1,5 +1,4 @@
-import { useGetPage } from '../hooks/useQueries';
-import { X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface PageModalProps {
   pageKey: string;
@@ -7,8 +6,6 @@ interface PageModalProps {
 }
 
 export default function PageModal({ pageKey, onClose }: PageModalProps) {
-  const { data: page, isLoading } = useGetPage(pageKey);
-
   const getDefaultContent = () => {
     switch (pageKey) {
       case 'privacy-policy':
@@ -31,7 +28,7 @@ export default function PageModal({ pageKey, onClose }: PageModalProps) {
     }
   };
 
-  const displayContent = page || getDefaultContent();
+  const displayContent = getDefaultContent();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
@@ -49,19 +46,13 @@ export default function PageModal({ pageKey, onClose }: PageModalProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary-magenta" />
-            </div>
-          ) : (
-            <div className="prose prose-sm max-w-none text-foreground">
-              {displayContent.content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-4 whitespace-pre-wrap">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          )}
+          <div className="prose prose-sm max-w-none text-foreground">
+            {displayContent.content.split('\n').map((paragraph, index) => (
+              <p key={index} className="mb-4 whitespace-pre-wrap">
+                {paragraph}
+              </p>
+            ))}
+          </div>
         </div>
 
         {/* Footer */}

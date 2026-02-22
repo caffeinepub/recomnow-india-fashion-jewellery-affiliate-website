@@ -1,47 +1,32 @@
-import { memo, useEffect } from 'react';
-import { useGetSitemap } from '../hooks/useQueries';
-import Spinner from '../components/Spinner';
+import { useEffect } from 'react';
 
-const SitemapPage = memo(() => {
-  const { data: sitemapXml, isLoading, error } = useGetSitemap();
-
+export default function SitemapPage() {
   useEffect(() => {
-    if (sitemapXml) {
-      // Replace the entire document with the XML content
-      // This serves the sitemap as pure XML without HTML wrapper
-      document.open();
-      document.write(sitemapXml);
-      document.close();
-    }
-  }, [sitemapXml]);
+    // Generate a basic sitemap XML
+    const canisterId = import.meta.env.VITE_CANISTER_ID_BACKEND || 'unknown';
+    const baseUrl = `https://${canisterId}.icp0.io`;
+    
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/products</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Spinner className="h-12 w-12 text-gold-600" />
-      </div>
-    );
-  }
+    // Replace the entire document with the XML
+    document.open();
+    document.write(sitemapXml);
+    document.close();
+  }, []);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 font-bold">Error loading sitemap</p>
-          <p className="text-sm text-gray-600 mt-2">Please try again later</p>
-        </div>
-      </div>
-    );
-  }
-
-  // This will be replaced by the XML content via useEffect
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Spinner className="h-12 w-12 text-gold-600" />
-    </div>
-  );
-});
-
-SitemapPage.displayName = 'SitemapPage';
-
-export default SitemapPage;
+  return null;
+}

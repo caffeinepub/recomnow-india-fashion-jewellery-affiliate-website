@@ -10,21 +10,7 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface BlogPost {
-  'id' : bigint,
-  'title' : string,
-  'content' : string,
-  'createdAt' : bigint,
-  'author' : string,
-  'isFeatured' : boolean,
-}
 export type ExternalBlob = Uint8Array;
-export interface NewsletterSignup { 'createdAt' : bigint, 'email' : string }
-export interface PageContent {
-  'title' : string,
-  'content' : string,
-  'lastModified' : bigint,
-}
 export interface Product {
   'id' : bigint,
   'mrp' : bigint,
@@ -111,23 +97,9 @@ export interface _SERVICE {
     _CaffeineStorageRefillResult
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
-  'addBlogPost' : ActorMethod<
-    [string, string, string, string, boolean],
-    BlogPost
-  >,
-  'addProduct' : ActorMethod<[string, ProductInput], Product>,
-  'addProductWithImage' : ActorMethod<
-    [string, ProductInput, ExternalBlob],
-    Product
-  >,
+  'addProduct' : ActorMethod<[ProductInput], bigint>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'bulkUpdatePages' : ActorMethod<
-    [string, Array<[string, string, string]>],
-    undefined
-  >,
-  'checkAuth' : ActorMethod<[string], boolean>,
-  'deleteBlogPost' : ActorMethod<[string, bigint], undefined>,
-  'deleteProduct' : ActorMethod<[string, bigint], undefined>,
+  'deleteProduct' : ActorMethod<[bigint], undefined>,
   'filterProducts' : ActorMethod<
     [
       [] | [ProductCategory],
@@ -138,53 +110,24 @@ export interface _SERVICE {
     ],
     Array<Product>
   >,
-  'getActiveProducts' : ActorMethod<[], Array<Product>>,
-  'getAllPages' : ActorMethod<[string], Array<[string, PageContent]>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
-  'getBlogPostById' : ActorMethod<[bigint], BlogPost>,
-  'getBlogPosts' : ActorMethod<[], Array<BlogPost>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getFashionProducts' : ActorMethod<[], Array<Product>>,
-  'getFeaturedBlogPosts' : ActorMethod<[], Array<BlogPost>>,
   'getFeaturedProducts' : ActorMethod<[], Array<Product>>,
-  'getGoogleVerificationFilename' : ActorMethod<[], [] | [string]>,
-  'getNewsletterSignups' : ActorMethod<[string], Array<NewsletterSignup>>,
-  'getPage' : ActorMethod<[string], PageContent>,
   'getProductById' : ActorMethod<[bigint], Product>,
-  'getProductCounter' : ActorMethod<[string], bigint>,
-  'getProductForEdit' : ActorMethod<[string, bigint], [] | [Product]>,
-  'getProductImage' : ActorMethod<[bigint], [] | [ExternalBlob]>,
+  'getProductCounter' : ActorMethod<[], bigint>,
   'getProductsByCategory' : ActorMethod<[ProductCategory], Array<Product>>,
   'getProductsByDiscountRange' : ActorMethod<[bigint, bigint], Array<Product>>,
   'getProductsByPriceRange' : ActorMethod<[bigint, bigint], Array<Product>>,
-  'getRobotsTxt' : ActorMethod<[], string>,
-  'getSiteInfo' : ActorMethod<
-    [],
-    {
-      'categories' : Array<string>,
-      'tagline' : string,
-      'siteName' : string,
-      'affiliateDisclaimer' : string,
-    }
-  >,
-  'getSitemap' : ActorMethod<[], string>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initializeAccessControl' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'login' : ActorMethod<[string, string], string>,
-  'logout' : ActorMethod<[string], undefined>,
+  'restoreProducts' : ActorMethod<[Array<Product>], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchProducts' : ActorMethod<[string], Array<Product>>,
-  'setGoogleVerificationFilename' : ActorMethod<[string, string], undefined>,
-  'subscribeNewsletter' : ActorMethod<[string], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
-  'updateBlogPost' : ActorMethod<
-    [string, bigint, string, string, string, boolean],
-    BlogPost
-  >,
-  'updatePage' : ActorMethod<[string, string, string, string], undefined>,
-  'updateProduct' : ActorMethod<[string, bigint, ProductInput], Product>,
+  'updateProduct' : ActorMethod<[bigint, ProductInput], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

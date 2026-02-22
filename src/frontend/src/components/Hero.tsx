@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import { ExternalLink, Package } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
-import OptimizedImage from './OptimizedImage';
+import TrustBadges from './TrustBadges';
 
 const Hero = memo(() => {
   const scrollToProducts = () => {
@@ -47,31 +47,11 @@ const Hero = memo(() => {
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-8">
-            <div className="flex items-center justify-center min-w-fit h-24">
-              <OptimizedImage
-                src="/assets/generated/badge-ssl.dim_200x80.png"
-                alt="SSL Secure - Safe and encrypted shopping"
-                width={200}
-                height={80}
-                className="h-full w-auto object-contain"
-                loading="eager"
-              />
-            </div>
-            <div className="flex items-center justify-center min-w-fit h-24">
-              <OptimizedImage
-                src="/assets/generated/badge-amazon-verified.dim_200x80.png"
-                alt="Amazon Verified - Authentic products from trusted sellers"
-                width={200}
-                height={80}
-                className="h-full w-auto object-contain"
-                loading="eager"
-              />
-            </div>
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-white/95 rounded-full shadow-lg min-w-fit">
-              <Package className="h-5 w-5 text-gold-700 flex-shrink-0" aria-hidden="true" />
-              <span className="text-sm font-bold text-navy-900 whitespace-nowrap">Fast Delivery</span>
-            </div>
+          <div className="pt-8">
+            <TrustBadges 
+              badges={['kolkata', 'amazon-associates', 'safe-checkout', 'money-back', 'ssl-secure']} 
+              layout="horizontal" 
+            />
           </div>
         </div>
       </div>

@@ -1,15 +1,14 @@
 import { memo, useState } from 'react';
-import { MapPin, Mail, Heart } from 'lucide-react';
+import { MapPin, Heart } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiX } from 'react-icons/si';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { useSubscribeNewsletter } from '../hooks/useQueries';
 import { toast } from 'sonner';
 import TrustBadges from './TrustBadges';
 
 const Footer = memo(() => {
   const [email, setEmail] = useState('');
-  const subscribeNewsletter = useSubscribeNewsletter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,12 +16,12 @@ const Footer = memo(() => {
       toast.error('Please enter a valid email address');
       return;
     }
-    try {
-      await subscribeNewsletter.mutateAsync(email);
-      setEmail('');
-    } catch (error) {
-      // Error already handled by mutation
-    }
+    
+    setIsSubmitting(true);
+    // Newsletter functionality removed
+    toast.info('Newsletter feature is currently unavailable');
+    setEmail('');
+    setIsSubmitting(false);
   };
 
   const currentYear = new Date().getFullYear();
@@ -78,22 +77,22 @@ const Footer = memo(() => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white text-navy-900 border-gold-400 placeholder:text-navy-500 font-medium"
-                disabled={subscribeNewsletter.isPending}
+                disabled={isSubmitting}
               />
               <Button
                 type="submit"
-                disabled={subscribeNewsletter.isPending}
+                disabled={isSubmitting}
                 className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold whitespace-nowrap"
               >
-                {subscribeNewsletter.isPending ? 'Subscribing...' : 'Subscribe'}
+                {isSubmitting ? 'Subscribing...' : 'Subscribe'}
               </Button>
             </form>
           </div>
         </div>
 
-        <div className="border-t border-navy-700 pt-6 mb-6 pb-12">
+        <div className="border-t border-navy-700 pt-8 mb-6 pb-8">
           <TrustBadges 
-            badges={['ssl', 'amazon-verified', 'genuine', 'return-guarantee', 'secure-checkout', 'kolkata']} 
+            badges={['kolkata', 'amazon-associates', 'safe-checkout', 'money-back', 'ssl-secure']} 
             layout="horizontal" 
           />
         </div>

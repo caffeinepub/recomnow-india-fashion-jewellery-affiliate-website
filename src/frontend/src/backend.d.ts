@@ -28,22 +28,10 @@ export interface ProductInput {
     price: bigint;
     discountPercentage: bigint;
 }
-export interface NewsletterSignup {
-    createdAt: bigint;
-    email: string;
-}
 export interface TransformationOutput {
     status: bigint;
     body: Uint8Array;
     headers: Array<http_header>;
-}
-export interface BlogPost {
-    id: bigint;
-    title: string;
-    content: string;
-    createdAt: bigint;
-    author: string;
-    isFeatured: boolean;
 }
 export interface http_header {
     value: string;
@@ -57,11 +45,6 @@ export interface http_request_result {
 export interface TransformationInput {
     context: Uint8Array;
     response: http_request_result;
-}
-export interface PageContent {
-    title: string;
-    content: string;
-    lastModified: bigint;
 }
 export interface Product {
     id: bigint;
@@ -102,54 +85,26 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addBlogPost(sessionToken: string, title: string, content: string, author: string, isFeatured: boolean): Promise<BlogPost>;
-    addProduct(sessionToken: string, productInput: ProductInput): Promise<Product>;
-    addProductWithImage(sessionToken: string, productInput: ProductInput, imageBlob: ExternalBlob): Promise<Product>;
+    addProduct(input: ProductInput): Promise<bigint>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    bulkUpdatePages(sessionToken: string, pages: Array<[string, string, string]>): Promise<void>;
-    checkAuth(sessionToken: string): Promise<boolean>;
-    deleteBlogPost(sessionToken: string, id: bigint): Promise<void>;
-    deleteProduct(sessionToken: string, id: bigint): Promise<void>;
+    deleteProduct(id: bigint): Promise<void>;
     filterProducts(category: ProductCategory | null, minPrice: bigint | null, maxPrice: bigint | null, minDiscount: bigint | null, maxDiscount: bigint | null): Promise<Array<Product>>;
-    getActiveProducts(): Promise<Array<Product>>;
-    getAllPages(sessionToken: string): Promise<Array<[string, PageContent]>>;
     getAllProducts(): Promise<Array<Product>>;
-    getBlogPostById(id: bigint): Promise<BlogPost>;
-    getBlogPosts(): Promise<Array<BlogPost>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getFashionProducts(): Promise<Array<Product>>;
-    getFeaturedBlogPosts(): Promise<Array<BlogPost>>;
     getFeaturedProducts(): Promise<Array<Product>>;
-    getGoogleVerificationFilename(): Promise<string | null>;
-    getNewsletterSignups(sessionToken: string): Promise<Array<NewsletterSignup>>;
-    getPage(pageKey: string): Promise<PageContent>;
     getProductById(id: bigint): Promise<Product>;
-    getProductCounter(sessionToken: string): Promise<bigint>;
-    getProductForEdit(sessionToken: string, id: bigint): Promise<Product | null>;
-    getProductImage(productId: bigint): Promise<ExternalBlob | null>;
+    getProductCounter(): Promise<bigint>;
     getProductsByCategory(category: ProductCategory): Promise<Array<Product>>;
     getProductsByDiscountRange(minDiscount: bigint, maxDiscount: bigint): Promise<Array<Product>>;
     getProductsByPriceRange(minPrice: bigint, maxPrice: bigint): Promise<Array<Product>>;
-    getRobotsTxt(): Promise<string>;
-    getSiteInfo(): Promise<{
-        categories: Array<string>;
-        tagline: string;
-        siteName: string;
-        affiliateDisclaimer: string;
-    }>;
-    getSitemap(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeAccessControl(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
-    login(username: string, password: string): Promise<string>;
-    logout(sessionToken: string): Promise<void>;
+    restoreProducts(productsToRestore: Array<Product>): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchProducts(searchTerm: string): Promise<Array<Product>>;
-    setGoogleVerificationFilename(sessionToken: string, filename: string): Promise<void>;
-    subscribeNewsletter(email: string): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
-    updateBlogPost(sessionToken: string, id: bigint, title: string, content: string, author: string, isFeatured: boolean): Promise<BlogPost>;
-    updatePage(sessionToken: string, pageKey: string, title: string, content: string): Promise<void>;
-    updateProduct(sessionToken: string, id: bigint, productInput: ProductInput): Promise<Product>;
+    updateProduct(id: bigint, input: ProductInput): Promise<void>;
 }

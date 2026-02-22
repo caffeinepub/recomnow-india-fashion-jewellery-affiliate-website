@@ -1,61 +1,45 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce web application with admin panel, badge displays, and product listing functionality",
+  "summary": "E-commerce project with product display and filtering functionality",
   "architectural_notes": [
-    "Admin panel positioned in top right corner",
-    "Footer text styled in blue color",
-    "SSL Protected and Quality badges displayed at top",
-    "Product data previously existed (~200 products until version 89)",
-    "Product data source mentioned as Amazon (integration approach needs clarification)"
+    "Product filtering interface needed",
+    "Product data should match Version 89 catalog"
   ],
-  "known_issues": [
-    "Badge containers cutting off SSL Protected and Quality badges at top and bottom",
-    "Products showing 'Error loading products' message",
-    "Product data integration with Amazon needs clarification on approach"
-  ],
-  "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-resize-the-ssl-protected-badge-container-at-the-top-of-the-page-to-display-the-full-badge-without-cutoff",
-      "title": "Resize the SSL Protected badge container at the top of the page to display the full badge without cutoff",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-resize-the-quality-verified-badge-container-at-the-top-of-the-page-to-display-the-full-badge-without-cutoff",
-      "title": "Resize the Quality/Verified badge container at the top of the page to display the full badge without cutoff",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-resize-all-badge-containers-at-the-bottom-of-the-page-footer-area-to-display-badges-with-full-visibility",
-      "title": "Resize all badge containers at the bottom of the page (footer area) to display badges with full visibility",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    }
-  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix badge visibility at top and bottom - resize containers for full display",
+      "summary": "Add Filter button matching Version 89 design",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Fix product loading error and restore/implement product data system",
+      "summary": "Restore product catalog from Version 89",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Restore the product catalog data from Version 89, including all products that were present in that version",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Amazon RecomNow India",
+  "projectName": "Add Filter button from Version 89 and restore Version 89 product catalog",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

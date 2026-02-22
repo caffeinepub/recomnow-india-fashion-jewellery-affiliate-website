@@ -1,62 +1,71 @@
 import { memo } from 'react';
 
 interface TrustBadgesProps {
-  badges: ('ssl' | 'amazon-verified' | 'genuine' | 'return-guarantee' | 'secure-checkout' | 'discount' | 'kolkata')[];
+  badges: ('kolkata' | 'amazon-associates' | 'safe-checkout' | 'money-back' | 'ssl-secure')[];
   className?: string;
   layout?: 'horizontal' | 'vertical';
 }
 
 const TrustBadges = memo(({ badges, className = '', layout = 'horizontal' }: TrustBadgesProps) => {
   const badgeConfig = {
-    ssl: {
-      src: '/assets/generated/badge-ssl.dim_200x80.png',
-      alt: 'SSL Protected – Safe & Secure / SSL সুরক্ষিত – নিরাপদ শপিং',
+    'kolkata': {
+      src: '/assets/image-7.png',
+      alt: 'Kolkata Based / কলকাতা ভিত্তিক',
+      width: 150,
+      height: 60,
+      maxHeight: '60px',
     },
-    'amazon-verified': {
-      src: '/assets/generated/badge-amazon-verified.dim_200x80.png',
-      alt: 'Amazon Verified Affiliate / Amazon অনুমোদিত পার্টনার',
+    'amazon-associates': {
+      src: '/assets/image-8.png',
+      alt: 'Amazon Associates Partner / Amazon অ্যাসোসিয়েটস পার্টনার',
+      width: 200,
+      height: 80,
+      maxHeight: '80px',
     },
-    genuine: {
-      src: '/assets/generated/badge-genuine.dim_200x80.png',
-      alt: '100% Genuine – Star Rated Items / ১০০% আসল – স্টার রেটেড প্রোডাক্টস',
+    'safe-checkout': {
+      src: '/assets/image-9.png',
+      alt: 'Safe & Secure Checkout / নিরাপদ ও সুরক্ষিত চেকআউট',
+      width: 200,
+      height: 80,
+      maxHeight: '80px',
     },
-    'return-guarantee': {
-      src: '/assets/generated/badge-return-guarantee.dim_200x80.png',
-      alt: 'Amazon Return & Refund Guarantee / Amazon রিটার্ন ও রিফান্ড গ্যারান্টি',
+    'money-back': {
+      src: '/assets/image-10.png',
+      alt: 'Money Back 100% Guaranteed / ১০০% টাকা ফেরত গ্যারান্টি',
+      width: 200,
+      height: 80,
+      maxHeight: '80px',
     },
-    'secure-checkout': {
-      src: '/assets/generated/badge-secure-checkout.dim_200x80.png',
-      alt: 'Secure Amazon Checkout / Amazon এ নিরাপদ চেকআউট',
-    },
-    discount: {
-      src: '/assets/generated/badge-discount.dim_200x80.png',
-      alt: 'Up to 87% OFF – Limited Stock! / ৮৭% পর্যন্ত ছাড় – সীমিত স্টক!',
-    },
-    kolkata: {
-      src: '/assets/generated/badge-kolkata.dim_150x60.png',
-      alt: 'Kolkata Based',
+    'ssl-secure': {
+      src: '/assets/image-11.png',
+      alt: '100% Secure Transactions SSL Secure / ১০০% সুরক্ষিত লেনদেন SSL সিকিউর',
+      width: 200,
+      height: 80,
+      maxHeight: '80px',
     },
   };
 
   const layoutClass = layout === 'vertical' 
     ? 'flex flex-col gap-4 items-center' 
-    : 'flex flex-wrap gap-4 items-center justify-center';
+    : 'flex flex-row flex-wrap gap-4 items-center justify-center';
 
   return (
     <div className={`${layoutClass} ${className}`} role="list" aria-label="Trust badges">
       {badges.map((badge) => {
         const config = badgeConfig[badge];
-        const isKolkata = badge === 'kolkata';
         return (
           <div 
             key={badge} 
             role="listitem" 
-            className={`flex-shrink-0 min-w-fit ${isKolkata ? 'h-16' : 'h-24'} flex items-center justify-center`}
+            className="flex-shrink-0 flex items-center justify-center"
           >
             <img
               src={config.src}
               alt={config.alt}
-              className="h-full w-auto object-contain"
+              width={config.width}
+              height={config.height}
+              className="w-auto max-w-full h-auto object-contain"
+              style={{ maxHeight: config.maxHeight }}
               loading="lazy"
             />
           </div>

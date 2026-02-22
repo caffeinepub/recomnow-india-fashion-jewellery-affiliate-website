@@ -1,12 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix badge visibility issues at the top and bottom of the page by resizing badge containers.
+**Goal:** Restore the Filter button and product catalog from Version 89.
 
 **Planned changes:**
-- Resize SSL Protected badge container at the top to show the complete badge without cutoff
-- Resize Quality/Verified badge container at the top to display the full badge
-- Resize all badge containers in the footer area to ensure full badge visibility
-- Adjust container heights to accommodate complete badge images while maintaining proper aspect ratios
+- Add Filter button to ProductGrid component matching Version 89 design and functionality
+- Restore product catalog data from Version 89 with all original products
 
-**User-visible outcome:** All badges at the top and bottom of the page are fully visible without any portions being cut off, improving the professional appearance and credibility indicators of the site.
+**User-visible outcome:** Users can filter products using the restored Filter button and browse the complete product catalog from Version 89.

@@ -19,14 +19,6 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
-export const BlogPost = IDL.Record({
-  'id' : IDL.Nat,
-  'title' : IDL.Text,
-  'content' : IDL.Text,
-  'createdAt' : IDL.Int,
-  'author' : IDL.Text,
-  'isFeatured' : IDL.Bool,
-});
 export const ProductCategory = IDL.Variant({
   'jewellery' : IDL.Null,
   'sarees' : IDL.Null,
@@ -52,6 +44,11 @@ export const ProductInput = IDL.Record({
   'price' : IDL.Nat,
   'discountPercentage' : IDL.Nat,
 });
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
 export const ProductStatus = IDL.Variant({
   'active' : IDL.Null,
   'inactive' : IDL.Null,
@@ -72,21 +69,7 @@ export const Product = IDL.Record({
   'price' : IDL.Nat,
   'discountPercentage' : IDL.Nat,
 });
-export const UserRole = IDL.Variant({
-  'admin' : IDL.Null,
-  'user' : IDL.Null,
-  'guest' : IDL.Null,
-});
-export const PageContent = IDL.Record({
-  'title' : IDL.Text,
-  'content' : IDL.Text,
-  'lastModified' : IDL.Int,
-});
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
-export const NewsletterSignup = IDL.Record({
-  'createdAt' : IDL.Int,
-  'email' : IDL.Text,
-});
 export const http_header = IDL.Record({
   'value' : IDL.Text,
   'name' : IDL.Text,
@@ -133,26 +116,9 @@ export const idlService = IDL.Service({
       [],
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
-  'addBlogPost' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Bool],
-      [BlogPost],
-      [],
-    ),
-  'addProduct' : IDL.Func([IDL.Text, ProductInput], [Product], []),
-  'addProductWithImage' : IDL.Func(
-      [IDL.Text, ProductInput, ExternalBlob],
-      [Product],
-      [],
-    ),
+  'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'bulkUpdatePages' : IDL.Func(
-      [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text, IDL.Text))],
-      [],
-      [],
-    ),
-  'checkAuth' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
-  'deleteBlogPost' : IDL.Func([IDL.Text, IDL.Nat], [], []),
-  'deleteProduct' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+  'deleteProduct' : IDL.Func([IDL.Nat], [], []),
   'filterProducts' : IDL.Func(
       [
         IDL.Opt(ProductCategory),
@@ -164,39 +130,13 @@ export const idlService = IDL.Service({
       [IDL.Vec(Product)],
       ['query'],
     ),
-  'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getAllPages' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(IDL.Tuple(IDL.Text, PageContent))],
-      ['query'],
-    ),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getBlogPostById' : IDL.Func([IDL.Nat], [BlogPost], ['query']),
-  'getBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getFashionProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getFeaturedBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
   'getFeaturedProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getGoogleVerificationFilename' : IDL.Func(
-      [],
-      [IDL.Opt(IDL.Text)],
-      ['query'],
-    ),
-  'getNewsletterSignups' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(NewsletterSignup)],
-      ['query'],
-    ),
-  'getPage' : IDL.Func([IDL.Text], [PageContent], ['query']),
   'getProductById' : IDL.Func([IDL.Nat], [Product], ['query']),
-  'getProductCounter' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-  'getProductForEdit' : IDL.Func(
-      [IDL.Text, IDL.Nat],
-      [IDL.Opt(Product)],
-      ['query'],
-    ),
-  'getProductImage' : IDL.Func([IDL.Nat], [IDL.Opt(ExternalBlob)], ['query']),
+  'getProductCounter' : IDL.Func([], [IDL.Nat], ['query']),
   'getProductsByCategory' : IDL.Func(
       [ProductCategory],
       [IDL.Vec(Product)],
@@ -212,20 +152,6 @@ export const idlService = IDL.Service({
       [IDL.Vec(Product)],
       ['query'],
     ),
-  'getRobotsTxt' : IDL.Func([], [IDL.Text], ['query']),
-  'getSiteInfo' : IDL.Func(
-      [],
-      [
-        IDL.Record({
-          'categories' : IDL.Vec(IDL.Text),
-          'tagline' : IDL.Text,
-          'siteName' : IDL.Text,
-          'affiliateDisclaimer' : IDL.Text,
-        }),
-      ],
-      ['query'],
-    ),
-  'getSitemap' : IDL.Func([], [IDL.Text], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -233,24 +159,15 @@ export const idlService = IDL.Service({
     ),
   'initializeAccessControl' : IDL.Func([], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
-  'logout' : IDL.Func([IDL.Text], [], []),
+  'restoreProducts' : IDL.Func([IDL.Vec(Product)], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
-  'setGoogleVerificationFilename' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'subscribeNewsletter' : IDL.Func([IDL.Text], [], []),
   'transform' : IDL.Func(
       [TransformationInput],
       [TransformationOutput],
       ['query'],
     ),
-  'updateBlogPost' : IDL.Func(
-      [IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Bool],
-      [BlogPost],
-      [],
-    ),
-  'updatePage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
-  'updateProduct' : IDL.Func([IDL.Text, IDL.Nat, ProductInput], [Product], []),
+  'updateProduct' : IDL.Func([IDL.Nat, ProductInput], [], []),
 });
 
 export const idlInitArgs = [];
@@ -266,14 +183,6 @@ export const idlFactory = ({ IDL }) => {
   const _CaffeineStorageRefillResult = IDL.Record({
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
-  });
-  const BlogPost = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Text,
-    'content' : IDL.Text,
-    'createdAt' : IDL.Int,
-    'author' : IDL.Text,
-    'isFeatured' : IDL.Bool,
   });
   const ProductCategory = IDL.Variant({
     'jewellery' : IDL.Null,
@@ -300,6 +209,11 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
     'discountPercentage' : IDL.Nat,
   });
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
   const ProductStatus = IDL.Variant({
     'active' : IDL.Null,
     'inactive' : IDL.Null,
@@ -320,21 +234,7 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
     'discountPercentage' : IDL.Nat,
   });
-  const UserRole = IDL.Variant({
-    'admin' : IDL.Null,
-    'user' : IDL.Null,
-    'guest' : IDL.Null,
-  });
-  const PageContent = IDL.Record({
-    'title' : IDL.Text,
-    'content' : IDL.Text,
-    'lastModified' : IDL.Int,
-  });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
-  const NewsletterSignup = IDL.Record({
-    'createdAt' : IDL.Int,
-    'email' : IDL.Text,
-  });
   const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
   const http_request_result = IDL.Record({
     'status' : IDL.Nat,
@@ -378,26 +278,9 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
-    'addBlogPost' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Bool],
-        [BlogPost],
-        [],
-      ),
-    'addProduct' : IDL.Func([IDL.Text, ProductInput], [Product], []),
-    'addProductWithImage' : IDL.Func(
-        [IDL.Text, ProductInput, ExternalBlob],
-        [Product],
-        [],
-      ),
+    'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'bulkUpdatePages' : IDL.Func(
-        [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text, IDL.Text))],
-        [],
-        [],
-      ),
-    'checkAuth' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
-    'deleteBlogPost' : IDL.Func([IDL.Text, IDL.Nat], [], []),
-    'deleteProduct' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+    'deleteProduct' : IDL.Func([IDL.Nat], [], []),
     'filterProducts' : IDL.Func(
         [
           IDL.Opt(ProductCategory),
@@ -409,39 +292,13 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Product)],
         ['query'],
       ),
-    'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getAllPages' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(IDL.Tuple(IDL.Text, PageContent))],
-        ['query'],
-      ),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getBlogPostById' : IDL.Func([IDL.Nat], [BlogPost], ['query']),
-    'getBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getFashionProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getFeaturedBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
     'getFeaturedProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getGoogleVerificationFilename' : IDL.Func(
-        [],
-        [IDL.Opt(IDL.Text)],
-        ['query'],
-      ),
-    'getNewsletterSignups' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(NewsletterSignup)],
-        ['query'],
-      ),
-    'getPage' : IDL.Func([IDL.Text], [PageContent], ['query']),
     'getProductById' : IDL.Func([IDL.Nat], [Product], ['query']),
-    'getProductCounter' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-    'getProductForEdit' : IDL.Func(
-        [IDL.Text, IDL.Nat],
-        [IDL.Opt(Product)],
-        ['query'],
-      ),
-    'getProductImage' : IDL.Func([IDL.Nat], [IDL.Opt(ExternalBlob)], ['query']),
+    'getProductCounter' : IDL.Func([], [IDL.Nat], ['query']),
     'getProductsByCategory' : IDL.Func(
         [ProductCategory],
         [IDL.Vec(Product)],
@@ -457,20 +314,6 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Product)],
         ['query'],
       ),
-    'getRobotsTxt' : IDL.Func([], [IDL.Text], ['query']),
-    'getSiteInfo' : IDL.Func(
-        [],
-        [
-          IDL.Record({
-            'categories' : IDL.Vec(IDL.Text),
-            'tagline' : IDL.Text,
-            'siteName' : IDL.Text,
-            'affiliateDisclaimer' : IDL.Text,
-          }),
-        ],
-        ['query'],
-      ),
-    'getSitemap' : IDL.Func([], [IDL.Text], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -478,28 +321,15 @@ export const idlFactory = ({ IDL }) => {
       ),
     'initializeAccessControl' : IDL.Func([], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
-    'logout' : IDL.Func([IDL.Text], [], []),
+    'restoreProducts' : IDL.Func([IDL.Vec(Product)], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
-    'setGoogleVerificationFilename' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'subscribeNewsletter' : IDL.Func([IDL.Text], [], []),
     'transform' : IDL.Func(
         [TransformationInput],
         [TransformationOutput],
         ['query'],
       ),
-    'updateBlogPost' : IDL.Func(
-        [IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Bool],
-        [BlogPost],
-        [],
-      ),
-    'updatePage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
-    'updateProduct' : IDL.Func(
-        [IDL.Text, IDL.Nat, ProductInput],
-        [Product],
-        [],
-      ),
+    'updateProduct' : IDL.Func([IDL.Nat, ProductInput], [], []),
   });
 };
 

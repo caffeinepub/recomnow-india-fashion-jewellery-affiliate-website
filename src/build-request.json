@@ -1,73 +1,53 @@
 {
   "kind": "build_request",
-  "title": "Fix badge visibility at top and bottom",
-  "projectName": "Amazon RecomNow India",
+  "title": "Add Filter button from Version 89 and restore Version 89 product catalog",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-4",
-      "text": "Resize the SSL Protected badge container at the top of the page to display the full badge without cutoff",
+      "id": "REQ-1",
+      "text": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-final"
         ],
         "quotes": [
-          "first of all, fix the badges at top and also at the bottom"
+          "Add a Filter button as Version 89"
         ]
       },
       "acceptanceCriteria": [
-        "SSL Protected badge at top is fully visible without any portion being cut off",
-        "Badge container height accommodates the complete badge image",
-        "Badge maintains proper aspect ratio and image quality"
+        "Filter button is visible in the ProductGrid component",
+        "Button design and placement matches Version 89 implementation",
+        "Button functionality works as it did in Version 89"
       ]
     },
     {
-      "id": "REQ-5",
-      "text": "Resize the Quality/Verified badge container at the top of the page to display the full badge without cutoff",
-      "target": "frontend",
+      "id": "REQ-2",
+      "text": "Restore the product catalog data from Version 89, including all products that were present in that version",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-final"
         ],
         "quotes": [
-          "first of all, fix the badges at top and also at the bottom"
+          "reload products from version 89"
         ]
       },
       "acceptanceCriteria": [
-        "Quality badge at top is fully visible without any portion being cut off",
-        "Badge container height accommodates the complete badge image",
-        "Badge maintains proper alignment with other top badges"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Resize all badge containers at the bottom of the page (footer area) to display badges with full visibility",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "first of all, fix the badges at top and also at the bottom"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All footer badges are fully visible without cutoff",
-        "Badge containers properly sized to show complete badge images",
-        "Badges maintain consistent spacing and alignment in footer"
+        "All products from Version 89 are present in the backend",
+        "Product data matches Version 89 (titles, prices, categories, images, URLs)",
+        "Products display correctly in the ProductGrid"
       ]
     }
   ],
   "constraints": [
-    "Do not change the backend schema or product data logic",
-    "Maintain existing badge image assets and positioning structure",
-    "Preserve the current visual hierarchy and layout flow"
+    "Must reference Version 89 implementation details for both Filter button and product data",
+    "Maintain compatibility with existing ProductGrid filtering and sorting functionality"
   ],
   "nonGoals": [
-    "Fixing the product loading error (to be addressed separately)",
-    "Modifying badge designs or replacing badge images",
-    "Changing the overall page layout or color scheme"
+    "Creating new filter functionality beyond what existed in Version 89",
+    "Modifying product data structure or schema",
+    "Changing overall ProductGrid layout or design"
   ],
   "imageRequirements": {
     "required": [],
