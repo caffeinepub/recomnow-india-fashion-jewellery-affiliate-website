@@ -1,6 +1,6 @@
 {
   "frontend/src/App.tsx": "Main application component with client-side routing using native browser history API, lazy-loaded page components (Products, Admin, Sitemap), route detection via pathname, and blog post modal state management.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for product operations and user profile management with support for the new hierarchical ProductCategory structure (fashion/jewellery discriminated union types).",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for product operations and user profile management with detailed logging in addProduct, updateProduct, and deleteProduct mutations to trace session token flow and actor calls with timestamps.",
   "frontend/src/components/Header.tsx": "Responsive header with logo, navigation links (Home, Products), and Admin Panel button visible to all users with gold gradient and crown icon, without authentication check.",
   "frontend/src/components/Hero.tsx": "Hero section with dark navy gradient background, magenta-colored heading using inline style (#FF00FF), white text with drop shadows, prominent CTAs including pink \"Shop Now\" button text, and trust badges displayed using the TrustBadges component.",
   "frontend/src/components/ProductGrid.tsx": "Product showcase with hierarchical category filtering (Fashion with 8 subcategories and Jewellery with 2 subcategories), collapsible category sections, light green \"Shop Now on Amazon\" buttons with pink text, and price range slider filtering.",
@@ -8,12 +8,12 @@
   "frontend/src/components/Footer.tsx": "Footer component with newsletter form that shows an info message when submitted, since newsletter backend functionality has been removed.",
   "frontend/src/components/ProfileSetupModal.tsx": "Modal dialog that appears for authenticated users without a profile, prompting them to enter their name with a welcoming design and rainbow gradient accents.",
   "frontend/src/components/AdminPanel.tsx": "Protected admin panel with tabbed interface supporting both custom authentication and Internet Identity logout flows with proper session cleanup.",
-  "frontend/src/components/admin/ProductManagement.tsx": "Admin product management interface with hierarchical category selection (Fashion/Jewellery main categories with respective subcategories), complete CRUD operations, form validation, loading states, and proper Button component import from shadcn/ui.",
+  "frontend/src/components/admin/ProductManagement.tsx": "Admin product management interface with comprehensive logging in handleSubmit to capture session token state, authentication status, and product input data before calling addProduct mutation for debugging authorization issues.",
   "frontend/src/components/admin/BlogManagement.tsx": "Admin component that displays a message indicating blog management is unavailable in this version.",
   "frontend/src/components/admin/NewsletterManagement.tsx": "Admin component that displays a message indicating newsletter management is unavailable in this version.",
   "frontend/src/index.css": "Global styles with WCAG AA+ compliant gold and navy OKLCH color system, bold typography, optimized font rendering, and custom pink styling for the price range slider component.",
-  "frontend/src/hooks/useAuth.ts": "Zustand-based authentication store with session token management, automatic session expiration checking (24 hours), and localStorage persistence for custom username/password authentication.",
-  "frontend/src/components/AdminLogin.tsx": "Enhanced admin login modal with dual authentication support (username/password and Internet Identity), registration mode with password strength validation, and automatic login after successful registration.",
+  "frontend/src/hooks/useAuth.ts": "Zustand-based authentication store with comprehensive console logging for session token management, tracking all state changes including setSession, clearSession, and session expiration checks with timestamps and token validation.",
+  "frontend/src/components/AdminLogin.tsx": "Enhanced admin login modal with improved error handling, better validation feedback, default to registration mode for first-time setup, and disabled states during loading to prevent duplicate submissions.",
   "backend/main.mo": "Enhanced backend with robust HTML parsing for Amazon product metadata extraction using priority-based extraction (og:title → h1 → title for titles, og:image → JSON data → img tags for images, JSON-LD → meta tags → Amazon-specific spans for prices), validates all required fields before saving, and aborts with clear error messages if extraction fails.",
   "frontend/src/components/admin/SitePagesManagement.tsx": "Admin component that displays a message indicating site pages management is unavailable in this version.",
   "frontend/src/components/PageModal.tsx": "Modal component that displays static default content for privacy policy, terms of service, and contact pages without backend dependency.",
@@ -44,7 +44,7 @@
   "frontend/src/pages/ProductsPage.tsx": "Dedicated products page component that displays a header section with title and description, followed by the ProductGrid component with all filtering capabilities.",
   "frontend/src/pages/AdminPage.tsx": "Admin page component with dual authentication support, loading states during verification, access control for Internet Identity users, and automatic admin access for custom auth users.",
   "frontend/src/pages/SitemapPage.tsx": "Sitemap page that generates a basic static XML sitemap with homepage and products page URLs.",
-  "frontend/src/hooks/useBackendAuth.ts": "React Query mutations for user registration, authentication, and logout operations with backend integration, error handling, and toast notifications.",
+  "frontend/src/hooks/useBackendAuth.ts": "React Query mutations for user registration, authentication, and logout with enhanced error handling that extracts and displays actual backend error messages via toast notifications.",
   "frontend/src/utils/passwordValidation.ts": "Password validation utilities with strength calculation (weak/medium/strong), requirement checking (minimum 8 characters, letters, numbers), and password match validation.",
   "frontend/src/components/PasswordStrengthIndicator.tsx": "Visual password strength indicator component with colored progress bar, strength label, and real-time feedback on missing requirements."
 }

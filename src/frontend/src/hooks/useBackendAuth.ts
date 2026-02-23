@@ -10,22 +10,32 @@ export function useRegisterUser() {
   return useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.addUser(username, password);
+      
+      try {
+        await actor.addUser(username, password);
+      } catch (error: any) {
+        // Extract the actual error message from the backend
+        const errorMessage = error?.message || error?.toString() || 'Unknown error';
+        console.error('Backend registration error:', errorMessage);
+        throw new Error(errorMessage);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Account created successfully!');
+      toast.success('Account created successfully! You can now log in.');
     },
     onError: (error: any) => {
       console.error('Registration error:', error);
       const errorMessage = error?.message || 'Failed to create account. Please try again.';
       
+      // Handle specific error cases
       if (errorMessage.includes('already exists')) {
         toast.error('Username already taken. Please choose a different username.');
-      } else if (errorMessage.includes('Unauthorized')) {
-        toast.error('Registration is currently restricted to administrators.');
+      } else if (errorMessage.includes('reserved')) {
+        toast.error('This username is reserved. Please choose a different username.');
       } else {
-        toast.error(errorMessage);
+        // Show the actual backend error message
+        toast.error(`Registration failed: ${errorMessage}`);
       }
       throw error;
     },
@@ -39,13 +49,20 @@ export function useAuthenticateUser() {
   return useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
       if (!actor) throw new Error('Actor not available');
-      const sessionToken = await actor.authenticateUser(username, password);
       
-      if (!sessionToken) {
-        throw new Error('Invalid credentials');
+      try {
+        const sessionToken = await actor.authenticateUser(username, password);
+        
+        if (!sessionToken) {
+          throw new Error('Invalid credentials');
+        }
+        
+        return { sessionToken, username };
+      } catch (error: any) {
+        const errorMessage = error?.message || error?.toString() || 'Authentication failed';
+        console.error('Backend authentication error:', errorMessage);
+        throw new Error(errorMessage);
       }
-      
-      return { sessionToken, username };
     },
     onSuccess: ({ sessionToken, username }) => {
       setSession(sessionToken, username);
@@ -58,7 +75,7 @@ export function useAuthenticateUser() {
       if (errorMessage.includes('Invalid credentials')) {
         toast.error('Invalid username or password.');
       } else {
-        toast.error(errorMessage);
+        toast.error(`Login failed: ${errorMessage}`);
       }
       throw error;
     },

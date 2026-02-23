@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Implement secure username/password authentication with registration functionality alongside the existing Internet Identity system.
+**Goal:** Fix the admin authorization check that is preventing authenticated admin users from adding products to the system.
 
 **Planned changes:**
-- Add user registration system with username and password fields
-- Implement password hashing in the backend using SHA-256 with salt
-- Create backend user management functions (registerUser, authenticateUser) with stable storage
-- Implement secure session token management with 24-hour expiration
-- Update AdminLogin component to support both login and registration modes with password strength validation
+- Debug and fix the isAdmin authorization check in backend main.mo addProduct function to correctly validate admin permissions using session tokens
+- Add console logging in frontend ProductManagement component to capture and display the session token being sent with addProduct requests
+- Add debug logging in backend main.mo to trace the complete authorization flow (caller principal, session lookup, role verification, failure points)
+- Verify that the session token is correctly passed from useBackendAuth hook through useQueries addProduct mutation to the backend actor call
 
-**User-visible outcome:** Admins can create their own accounts with username and password, log in securely with session management, and use either the new authentication system or Internet Identity to access the admin panel.
+**User-visible outcome:** Admin users can successfully add new products without encountering "Unauthorized: Only admins can add products" errors. The authorization check correctly validates their admin permissions.

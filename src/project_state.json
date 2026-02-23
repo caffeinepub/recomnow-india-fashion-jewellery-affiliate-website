@@ -1,36 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Web application with secure username/password authentication system",
-  "architectural_notes": [
-    "Username/password authentication system replacing Internet Identity",
-    "Password hashing required for security (no plain text storage)",
-    "Session management for authenticated users"
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Authorization issue: Users receive 'Unauthorized: Only admins can add products' error when attempting to add products, even after attempted fix in Version 110"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-replace-hardcoded-admin-credentials-in-frontend-src-hooks-useauth-ts-with-a-secure-registration-system-that-allows-creating-new-admin-accounts",
-      "title": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
+      "id": "feature-add-console-logging-in-the-frontend-productmanagement-component-to-capture-and-display-the-exact-session-token-being-sent-with-addproduct-requests",
+      "title": "Add console logging in the frontend ProductManagement component to capture and display the exact session token being sent with addProduct requests",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-secure-session-management-with-token-based-authentication-that-expires-after-a-reasonable-period",
-      "title": "Implement secure session management with token-based authentication that expires after a reasonable period",
+      "id": "feature-verify-that-the-session-token-is-being-correctly-passed-from-the-usebackendauth-hook-through-the-usequeries-addproduct-mutation-to-the-backend-actor-call",
+      "title": "Verify that the session token is being correctly passed from the useBackendAuth hook through the useQueries addProduct mutation to the backend actor call",
       "reqIds": [
         "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-adminlogin-component-in-frontend-src-components-adminlogin-tsx-to-include-registration-ui-and-connect-to-the-new-backend-authentication-system",
-      "title": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
-      "reqIds": [
-        "REQ-5"
       ],
       "version": 1
     }
@@ -38,40 +28,22 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Implement secure user registration system with custom account creation",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add password hashing (no plain text storage)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Implement secure session management",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
+      "summary": "Debug and fix the isAdmin authorization check in the backend main.mo addProduct function to correctly validate admin permissions using the caller's session token",
       "reqIds": [
-        "REQ-2"
+        "REQ-1"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-6",
-      "summary": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+      "id": "AR-3",
+      "summary": "Add debug logging in backend main.mo to trace the complete authorization flow: log the incoming caller principal, session token lookup, role verification, and the exact point where authorization fails",
       "reqIds": [
         "REQ-3"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Fashion Store Admin",
+  "projectName": "Fix admin authorization check for product creation",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,121 +1,81 @@
 {
   "kind": "build_request",
-  "title": "Implement secure username/password authentication with registration",
-  "projectName": "Fashion Store Admin",
+  "title": "Fix admin authorization check for product creation",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
-      "target": "frontend",
+      "text": "Debug and fix the isAdmin authorization check in the backend main.mo addProduct function to correctly validate admin permissions using the caller's session token",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-final"
+          "msg-6"
         ],
         "quotes": [
-          "A proper user registration system where I create my own account"
+          "issue not resolved. it is still showing \"Unauthorized: Only admins can add products\"."
         ]
       },
       "acceptanceCriteria": [
-        "Remove hardcoded credentials (admin/admin123) from useAuth.ts",
-        "Add registration form UI with username, password, and password confirmation fields",
-        "Validate password strength (minimum 8 characters, mix of letters and numbers)",
-        "Prevent duplicate usernames during registration",
-        "Display success message after successful registration"
+        "The addProduct function successfully accepts product additions from authenticated admin users",
+        "The authorization check correctly validates the session token against stored admin sessions",
+        "No 'Unauthorized: Only admins can add products' error appears for valid admin users"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
-      "target": "backend",
+      "text": "Add console logging in the frontend ProductManagement component to capture and display the exact session token being sent with addProduct requests",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-final"
-        ],
-        "quotes": [
-          "Password hashing (never storing passwords in plain text)"
+          "msg-6"
         ]
       },
       "acceptanceCriteria": [
-        "Hash all passwords before storing in backend state",
-        "Use salt with each password hash for additional security",
-        "Verify passwords by comparing hashed values during login",
-        "Never expose plain text passwords in any API response or log"
+        "Session token value is logged to browser console before making addProduct API call",
+        "Log output includes timestamp and token format for debugging"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+      "text": "Add debug logging in backend main.mo to trace the complete authorization flow: log the incoming caller principal, session token lookup, role verification, and the exact point where authorization fails",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-final"
-        ],
-        "quotes": [
-          "A proper user registration system where I create my own account"
+          "msg-6"
         ]
       },
       "acceptanceCriteria": [
-        "Add registerUser function that accepts username and password, hashes the password, and stores the user",
-        "Add authenticateUser function that verifies username and hashed password",
-        "Store users in stable storage to persist across upgrades",
-        "Return appropriate error messages for duplicate usernames or invalid credentials"
+        "Backend logs show the caller principal for each addProduct request",
+        "Backend logs indicate whether the session token was found in storage",
+        "Backend logs show the user's role retrieved from the session",
+        "Backend logs clearly identify which authorization check is failing"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement secure session management with token-based authentication that expires after a reasonable period",
+      "text": "Verify that the session token is being correctly passed from the useBackendAuth hook through the useQueries addProduct mutation to the backend actor call",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-final"
-        ],
-        "quotes": [
-          "Secure session management"
+          "msg-6"
         ]
       },
       "acceptanceCriteria": [
-        "Generate secure session tokens upon successful login",
-        "Store session tokens securely in the backend with expiration timestamps",
-        "Set session expiration to 24 hours by default",
-        "Validate session tokens on protected endpoints",
-        "Clear expired sessions automatically",
-        "Provide logout functionality that invalidates the session token"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-final"
-        ],
-        "quotes": [
-          "A proper user registration system where I create my own account"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Add toggle between login and registration modes",
-        "Display registration form with username, password, and confirm password fields",
-        "Show password strength indicator",
-        "Handle registration errors (duplicate username, weak password)",
-        "Automatically log in user after successful registration"
+        "Session token from useAuth store is correctly included in the addProduct mutation payload",
+        "No token transformation or corruption occurs during the frontend-to-backend call chain"
       ]
     }
   ],
   "constraints": [
-    "Preserve existing Internet Identity authentication option alongside new username/password system",
-    "Do not modify Internet Identity authentication logic in useInternetIdentity.ts",
-    "Maintain existing role-based access control for admin panel",
-    "Keep current product management functionality intact"
+    "Do not modify the existing user authentication flow or session storage mechanism",
+    "Maintain backward compatibility with existing admin sessions",
+    "Keep the single-actor backend architecture"
   ],
   "nonGoals": [
-    "Implementing password reset functionality",
-    "Adding email verification",
-    "Creating user roles beyond admin",
-    "Implementing two-factor authentication",
-    "Adding OAuth or social login options"
+    "Redesigning the entire authorization system",
+    "Adding new authentication methods",
+    "Changing the session token format",
+    "Modifying other CRUD operations (update, delete) unless they have the same issue"
   ],
   "imageRequirements": {
     "required": [],

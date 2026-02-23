@@ -1,80 +1,45 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Implement secure username/password authentication with registration",
+  "title": "Fix admin authorization check for product creation - Frontend debugging",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Replace hardcoded admin credentials with secure registration system UI",
+      "id": "REQ-2",
+      "summary": "Add console logging in ProductManagement component to capture session token being sent with addProduct requests",
       "acceptanceCriteria": [
-        "Remove hardcoded credentials (admin/admin123) from useAuth.ts",
-        "Add registration form UI with username, password, and password confirmation fields",
-        "Validate password strength (minimum 8 characters, mix of letters and numbers)",
-        "Prevent duplicate usernames during registration",
-        "Display success message after successful registration"
+        "Session token value is logged to browser console before making addProduct API call",
+        "Log output includes timestamp and token format for debugging"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useAuth.ts",
+          "path": "frontend/src/components/admin/ProductManagement.tsx",
           "operation": "modify",
-          "description": "Remove hardcoded admin credentials (admin/admin123) and update the authentication store to integrate with backend username/password authentication via addUser and authenticateUser backend capabilities. Add registration flow that validates password strength client-side before calling the backend. Store session tokens returned from authenticateUser in localStorage for persistence. Add error handling for duplicate usernames and weak passwords."
-        },
-        {
-          "path": "frontend/src/hooks/useBackendAuth.ts",
-          "operation": "create",
-          "description": "Create a new React Query hook for backend authentication operations. Implement useRegisterUser mutation that calls addUser backend capability with username and password. Implement useAuthenticateUser mutation that calls authenticateUser and stores the returned session token. Implement useLogout mutation that calls the logout backend capability with the session token. Include error handling and loading states for all mutations."
+          "description": "Add console logging before the addProduct mutation call to log the session token value with timestamp. Include logging for: (1) the raw session token from useAuth store, (2) timestamp in ISO format, (3) token length and format validation. Wrap the addProduct mutation invocation to capture the exact payload being sent to the backend."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Implement secure session management frontend with token-based authentication",
+      "summary": "Verify session token flow from useAuth through useQueries addProduct mutation to backend actor call",
       "acceptanceCriteria": [
-        "Generate secure session tokens upon successful login",
-        "Store session tokens securely in the backend with expiration timestamps",
-        "Set session expiration to 24 hours by default",
-        "Validate session tokens on protected endpoints",
-        "Clear expired sessions automatically",
-        "Provide logout functionality that invalidates the session token"
+        "Session token from useAuth store is correctly included in the addProduct mutation payload",
+        "No token transformation or corruption occurs during the frontend-to-backend call chain"
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useAuth.ts",
           "operation": "modify",
-          "description": "Add session token management to the Zustand store. Store session tokens in localStorage after successful login via authenticateUser. Implement automatic token expiration checking (24 hour default) by storing login timestamp alongside the token. Add logout functionality that clears the session token from localStorage and calls the backend logout capability. Include session validation logic that checks token expiration before making authenticated requests."
+          "description": "Add console logging in the useAuth store to track session token state changes. Log when sessionToken is set, retrieved, or cleared. Include validation checks to ensure the token maintains its format throughout the store lifecycle."
         },
         {
-          "path": "frontend/src/hooks/useActor.ts",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Integrate session token validation into the actor initialization. Before creating the actor instance, check if a valid session token exists in useAuth store. If the token is expired (>24 hours old), automatically clear it and redirect to login. Pass the session token in authenticated requests to the backend for validation. Handle 401/403 responses by clearing expired tokens and redirecting to login."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Update AdminLogin component to include registration UI and connect to backend authentication",
-      "acceptanceCriteria": [
-        "Add toggle between login and registration modes",
-        "Display registration form with username, password, and confirm password fields",
-        "Show password strength indicator",
-        "Handle registration errors (duplicate username, weak password)",
-        "Automatically log in user after successful registration"
-      ],
-      "file_operations": [
+          "description": "Add detailed logging in the addProduct mutation to trace the session token through the mutation pipeline. Log: (1) session token received from useAuth at mutation invocation, (2) token before actor call, (3) any transformations applied to the token. Verify the token is correctly passed to the backend actor's addProduct method without modification."
+        },
         {
-          "path": "frontend/src/components/AdminLogin.tsx",
+          "path": "frontend/src/components/admin/ProductManagement.tsx",
           "operation": "modify",
-          "description": "Add a mode toggle between 'login' and 'register' views using state. In registration mode, display username field, password field, confirm password field, and a password strength indicator showing weak/medium/strong based on length and character mix. Validate that passwords match before submission. Wire the registration form to useRegisterUser mutation from useBackendAuth hook. On successful registration, automatically call useAuthenticateUser to log the user in. Display error messages for duplicate usernames or weak passwords. Preserve the existing Internet Identity login option as an alternative authentication method. Use responsive layout for both login and registration forms."
-        },
-        {
-          "path": "frontend/src/components/PasswordStrengthIndicator.tsx",
-          "operation": "create",
-          "description": "Create a reusable password strength indicator component that evaluates password strength based on length (minimum 8 characters) and character variety (letters, numbers, special characters). Display visual feedback with colored bar (red=weak, yellow=medium, green=strong) and text label. Accept password string as prop and return strength level. Use memoization to avoid unnecessary recalculations."
-        },
-        {
-          "path": "frontend/src/utils/passwordValidation.ts",
-          "operation": "create",
-          "description": "Create utility functions for password validation. Implement validatePasswordStrength that checks minimum 8 characters and mix of letters and numbers, returning strength enum (weak/medium/strong). Implement validatePasswordMatch that compares password and confirmation fields. Export validation error messages for UI display. Include regex patterns for password requirements."
+          "description": "Add comprehensive logging at the point where addProduct mutation is called to verify the complete data flow. Log the session token state immediately before mutation execution and verify it matches the expected format from useAuth store."
         }
       ]
     }

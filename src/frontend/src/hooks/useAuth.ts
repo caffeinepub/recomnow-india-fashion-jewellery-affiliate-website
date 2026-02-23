@@ -20,24 +20,52 @@ export const useAuthStore = create<AuthState>()(
       username: null,
       isAuthenticated: false,
       loginTimestamp: null,
-      setSession: (token: string, username: string) => 
+      setSession: (token: string, username: string) => {
+        console.log('[useAuth] setSession called', {
+          timestamp: new Date().toISOString(),
+          username,
+          tokenLength: token.length,
+          tokenPreview: token.substring(0, 10) + '...',
+        });
         set({ 
           sessionToken: token, 
           username, 
           isAuthenticated: true,
           loginTimestamp: Date.now()
-        }),
-      clearSession: () => 
+        });
+        console.log('[useAuth] Session set successfully', {
+          isAuthenticated: true,
+          loginTimestamp: Date.now(),
+        });
+      },
+      clearSession: () => {
+        console.log('[useAuth] clearSession called', {
+          timestamp: new Date().toISOString(),
+          previousUsername: get().username,
+        });
         set({ 
           sessionToken: null, 
           username: null, 
           isAuthenticated: false,
           loginTimestamp: null
-        }),
+        });
+        console.log('[useAuth] Session cleared successfully');
+      },
       isSessionExpired: () => {
         const { loginTimestamp } = get();
-        if (!loginTimestamp) return true;
-        return Date.now() - loginTimestamp > SESSION_DURATION;
+        if (!loginTimestamp) {
+          console.log('[useAuth] isSessionExpired: No login timestamp found');
+          return true;
+        }
+        const expired = Date.now() - loginTimestamp > SESSION_DURATION;
+        console.log('[useAuth] isSessionExpired check', {
+          loginTimestamp,
+          currentTime: Date.now(),
+          timeSinceLogin: Date.now() - loginTimestamp,
+          sessionDuration: SESSION_DURATION,
+          expired,
+        });
+        return expired;
       },
     }),
     {
@@ -58,14 +86,24 @@ export function useAuth() {
 
   // Check if session is expired on access
   if (isAuthenticated && isSessionExpired()) {
+    console.log('[useAuth] Session expired, clearing...');
     clearSession();
   }
 
-  return {
+  const currentState = {
     sessionToken,
     username,
     isAuthenticated: isAuthenticated && !isSessionExpired(),
     setSession,
     clearSession,
   };
+
+  console.log('[useAuth] Current auth state', {
+    hasSessionToken: !!sessionToken,
+    tokenLength: sessionToken?.length,
+    username,
+    isAuthenticated: currentState.isAuthenticated,
+  });
+
+  return currentState;
 }

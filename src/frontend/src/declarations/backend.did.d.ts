@@ -97,6 +97,7 @@ export interface _SERVICE {
     _CaffeineStorageRefillResult
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_debugIsAdmin' : ActorMethod<[Principal], boolean>,
   'addProduct' : ActorMethod<[ProductInput], bigint>,
   'addUser' : ActorMethod<[string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,

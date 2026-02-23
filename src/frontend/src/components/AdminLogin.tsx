@@ -15,7 +15,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
   const registerMutation = useRegisterUser();
   const authenticateMutation = useAuthenticateUser();
   
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>('register'); // Default to register for first-time setup
   const [authMethod, setAuthMethod] = useState<'custom' | 'ii'>('custom');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,11 +26,22 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
     e.preventDefault();
     setError(null);
 
+    if (!username.trim()) {
+      setError('Please enter a username');
+      return;
+    }
+
+    if (!password) {
+      setError('Please enter a password');
+      return;
+    }
+
     try {
       await authenticateMutation.mutateAsync({ username, password });
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+      const errorMsg = err.message || 'Invalid credentials';
+      setError(errorMsg);
     }
   };
 
@@ -38,10 +49,21 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
     e.preventDefault();
     setError(null);
 
+    // Validate username
+    if (!username.trim()) {
+      setError('Please enter a username');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters long');
+      return;
+    }
+
     // Validate password strength
     const validation = validatePasswordStrength(password);
     if (!validation.isValid) {
-      setError('Password does not meet minimum requirements');
+      setError('Password must be at least 8 characters and contain both letters and numbers');
       return;
     }
 
@@ -59,7 +81,8 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
       await authenticateMutation.mutateAsync({ username, password });
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      const errorMsg = err.message || 'Registration failed';
+      setError(errorMsg);
     }
   };
 
@@ -69,7 +92,8 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
       await iiLogin();
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Internet Identity login failed');
+      const errorMsg = err.message || 'Internet Identity login failed';
+      setError(errorMsg);
     }
   };
 
@@ -84,11 +108,12 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-rainbow">
           <h2 className="text-2xl font-bold text-white">
-            {mode === 'login' ? 'Admin Login' : 'Create Account'}
+            {mode === 'login' ? 'Admin Login' : 'Create Admin Account'}
           </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
+            aria-label="Close"
           >
             <X className="h-6 w-6" />
           </button>
@@ -98,7 +123,10 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
         <div className="p-6 pb-0">
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => setAuthMethod('custom')}
+              onClick={() => {
+                setAuthMethod('custom');
+                setError(null);
+              }}
               className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                 authMethod === 'custom'
                   ? 'bg-gradient-rainbow text-white'
@@ -108,7 +136,10 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               Username/Password
             </button>
             <button
-              onClick={() => setAuthMethod('ii')}
+              onClick={() => {
+                setAuthMethod('ii');
+                setError(null);
+              }}
               className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                 authMethod === 'ii'
                   ? 'bg-gradient-rainbow text-white'
@@ -137,7 +168,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <p className="text-sm text-muted-foreground">
                 {mode === 'login' 
                   ? 'Enter your credentials to access the admin panel'
-                  : 'Create a new admin account with a secure password'
+                  : 'Create your admin account to get started'
                 }
               </p>
             </div>
@@ -164,6 +195,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                     placeholder="Enter username"
                     required
                     autoComplete="username"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -183,6 +215,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                     placeholder="Enter password"
                     required
                     autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    disabled={isLoading}
                   />
                 </div>
                 {mode === 'register' && password && (
@@ -208,10 +241,11 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                       placeholder="Confirm password"
                       required
                       autoComplete="new-password"
+                      disabled={isLoading}
                     />
                   </div>
                   {confirmPassword && !validatePasswordMatch(password, confirmPassword) && (
-                    <p className="mt-2 text-xs text-red-500">Passwords do not match</p>
+                    <p className="mt-2 text-xs text-destructive">Passwords do not match</p>
                   )}
                 </div>
               )}
@@ -221,7 +255,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -241,7 +275,8 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {mode === 'login' 
                   ? "Don't have an account? Register" 
@@ -252,7 +287,8 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
+                disabled={isLoading}
+                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -275,11 +311,11 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleInternetIdentityLogin}
                 disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -293,7 +329,8 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
+                disabled={isLoading}
+                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

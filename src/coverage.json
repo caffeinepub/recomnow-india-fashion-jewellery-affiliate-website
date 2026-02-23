@@ -1,89 +1,65 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-23T06:29:25.171Z",
+  "generatedAt": "2026-02-23T07:30:12.788Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 3,
+    "total": 4,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useBackendAuth.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useBackendAuth.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
+        "summary": "Debug and fix the isAdmin authorization check in the backend main.mo addProduct function to correctly validate admin permissions using the caller's session token",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
+        "id": "REQ-2",
+        "summary": "Add console logging in the frontend ProductManagement component to capture and display the exact session token being sent with addProduct requests",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/admin/ProductManagement.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/admin/ProductManagement.tsx"
+        ]
+      },
+      {
         "id": "REQ-3",
-        "summary": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+        "summary": "Add debug logging in backend main.mo to trace the complete authorization flow: log the incoming caller principal, session token lookup, role verification, and the exact point where authorization fails",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-4",
-        "summary": "Implement secure session management with token-based authentication that expires after a reasonable period",
+        "summary": "Verify that the session token is being correctly passed from the useBackendAuth hook through the useQueries addProduct mutation to the backend actor call",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useActor.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/admin/ProductManagement.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useAuth.ts"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/AdminLogin.tsx",
-          "frontend/src/components/PasswordStrengthIndicator.tsx",
-          "frontend/src/utils/passwordValidation.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/AdminLogin.tsx",
-          "frontend/src/components/PasswordStrengthIndicator.tsx",
-          "frontend/src/utils/passwordValidation.ts"
+          "frontend/src/hooks/useAuth.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/admin/ProductManagement.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/AdminLogin.tsx",
-    "frontend/src/components/AdminPanel.tsx",
-    "frontend/src/components/PasswordStrengthIndicator.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
+    "frontend/src/components/admin/ProductManagement.tsx",
     "frontend/src/hooks/useAuth.ts",
-    "frontend/src/hooks/useBackendAuth.ts",
-    "frontend/src/pages/AdminPage.tsx",
-    "frontend/src/utils/passwordValidation.ts",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

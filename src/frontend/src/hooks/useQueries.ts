@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { toast } from 'sonner';
 import type { ProductInput, ProductCategory, FashionCategory } from '../backend';
+import { useAuth } from './useAuth';
 
 // Optimized stale time and cache time for better performance
 const DEFAULT_STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -147,21 +148,65 @@ export function useFilterProducts(
 // Product Mutations
 export function useAddProduct() {
   const { actor } = useActor();
+  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: ProductInput) => {
-      if (!actor) throw new Error('Actor not available');
-      return await actor.addProduct(input);
+      console.log('[useAddProduct] Mutation called', {
+        timestamp: new Date().toISOString(),
+        hasActor: !!actor,
+        hasSessionToken: !!sessionToken,
+        sessionTokenLength: sessionToken?.length,
+        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 10) + '...' : 'null',
+        username,
+        productTitle: input.title,
+      });
+
+      if (!actor) {
+        console.error('[useAddProduct] Actor not available');
+        throw new Error('Actor not available');
+      }
+
+      console.log('[useAddProduct] About to call actor.addProduct', {
+        timestamp: new Date().toISOString(),
+        input: {
+          title: input.title,
+          category: input.category,
+          price: input.price.toString(),
+        },
+      });
+
+      try {
+        const result = await actor.addProduct(input);
+        console.log('[useAddProduct] actor.addProduct succeeded', {
+          timestamp: new Date().toISOString(),
+          result: result.toString(),
+        });
+        return result;
+      } catch (error: any) {
+        console.error('[useAddProduct] actor.addProduct failed', {
+          timestamp: new Date().toISOString(),
+          error: error.message || error,
+          errorType: typeof error,
+          errorStack: error.stack,
+        });
+        throw error;
+      }
     },
     onSuccess: () => {
+      console.log('[useAddProduct] Mutation onSuccess callback');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['allProducts'] });
       queryClient.invalidateQueries({ queryKey: ['fashionProducts'] });
       toast.success('Product added successfully!');
     },
     onError: (error: any) => {
-      console.error('Add product error:', error);
+      console.error('[useAddProduct] Mutation onError callback', {
+        timestamp: new Date().toISOString(),
+        error: error?.message || error,
+        errorType: typeof error,
+      });
       toast.error(error?.message || 'Failed to add product. Please try again.');
     },
   });
@@ -169,10 +214,20 @@ export function useAddProduct() {
 
 export function useUpdateProduct() {
   const { actor } = useActor();
+  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, ...input }: ProductInput & { id: bigint }) => {
+      console.log('[useUpdateProduct] Mutation called', {
+        timestamp: new Date().toISOString(),
+        hasActor: !!actor,
+        hasSessionToken: !!sessionToken,
+        sessionTokenLength: sessionToken?.length,
+        username,
+        productId: id.toString(),
+      });
+
       if (!actor) throw new Error('Actor not available');
       return await actor.updateProduct(id, input);
     },
@@ -183,7 +238,7 @@ export function useUpdateProduct() {
       toast.success('Product updated successfully!');
     },
     onError: (error: any) => {
-      console.error('Update product error:', error);
+      console.error('[useUpdateProduct] Update product error:', error);
       toast.error(error?.message || 'Failed to update product. Please try again.');
     },
   });
@@ -191,10 +246,20 @@ export function useUpdateProduct() {
 
 export function useDeleteProduct() {
   const { actor } = useActor();
+  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: bigint) => {
+      console.log('[useDeleteProduct] Mutation called', {
+        timestamp: new Date().toISOString(),
+        hasActor: !!actor,
+        hasSessionToken: !!sessionToken,
+        sessionTokenLength: sessionToken?.length,
+        username,
+        productId: id.toString(),
+      });
+
       if (!actor) throw new Error('Actor not available');
       return await actor.deleteProduct(id);
     },
@@ -205,7 +270,7 @@ export function useDeleteProduct() {
       toast.success('Product deleted successfully!');
     },
     onError: (error: any) => {
-      console.error('Delete product error:', error);
+      console.error('[useDeleteProduct] Delete product error:', error);
       toast.error(error?.message || 'Failed to delete product. Please try again.');
     },
   });

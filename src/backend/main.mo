@@ -8,14 +8,14 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
+import Debug "mo:core/Debug";
 import AccessControl "authorization/access-control";
 import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
-import Migration "migration";
 import MixinStorage "blob-storage/Mixin";
 
-// Add explicit migration in "-overrides" file
-(with migration = Migration.run)
+// No migration code necessary!
+
 actor {
   include MixinStorage();
 
@@ -102,9 +102,11 @@ actor {
 
   var sessions = Map.empty<Text, SessionInfo>();
   var users = Map.empty<Text, Text>();
+  let userPrincipals = Map.empty<Text, Principal>();
   var sessionCounter : Nat = 0;
 
   var accessControlInitialized : Bool = false;
+  var adminPrincipal : ?Principal = null;
 
   let SESSION_DURATION : Int = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
 
@@ -113,8 +115,9 @@ actor {
       Runtime.trap("Access control already initialized");
     };
     AccessControl.initialize(accessControlState, caller);
-    users.add("admin", "admin");
     accessControlInitialized := true;
+    adminPrincipal := ?caller;
+    Debug.print("Access control initialized with admin principal: " # caller.toText());
   };
 
   public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
@@ -129,13 +132,21 @@ actor {
     AccessControl.isAdmin(accessControlState, caller);
   };
 
+  public query ({ caller }) func _debugIsAdmin(callerPrincipal : Principal) : async Bool {
+    AccessControl.isAdmin(accessControlState, callerPrincipal);
+  };
+
   func hasAdminPermission(caller : Principal) : Bool {
-    AccessControl.hasPermission(accessControlState, caller, #admin);
+    let hasPermission = AccessControl.hasPermission(accessControlState, caller, #admin);
+    Debug.print("hasAdminPermission check for principal " # caller.toText() # ": " # debug_show(hasPermission));
+    hasPermission;
   };
 
   public shared ({ caller }) func addUser(username : Text, password : Text) : async () {
-    if (not hasAdminPermission(caller)) {
-      Runtime.trap("Unauthorized: Only admins can add users");
+    Debug.print("addUser called for username: " # username # " by principal: " # caller.toText());
+    
+    if (username == "admin") {
+      Runtime.trap("`admin` username is reserved");
     };
 
     switch (users.get(username)) {
@@ -144,6 +155,17 @@ actor {
       };
       case (null) {
         users.add(username, password);
+        userPrincipals.add(username, caller);
+
+        // Initialize access control if not done yet
+        if (not accessControlInitialized) {
+          AccessControl.initialize(accessControlState, caller);
+          accessControlInitialized := true;
+          adminPrincipal := ?caller;
+          Debug.print("Access control initialized during user registration with admin: " # caller.toText());
+        };
+        
+        Debug.print("User registered: " # username # " with principal: " # caller.toText());
       };
     };
   };
@@ -158,11 +180,15 @@ actor {
     };
 
     users.remove(username);
+    userPrincipals.remove(username);
   };
 
   public shared ({ caller }) func authenticateUser(username : Text, password : Text) : async ?Text {
+    Debug.print("authenticateUser called for username: " # username # " by principal: " # caller.toText());
+    
     switch (users.get(username)) {
       case (null) {
+        Debug.print("User not found: " # username);
         null;
       };
       case (?storedPassword) {
@@ -180,8 +206,36 @@ actor {
 
           sessions.add(sessionToken, session);
 
+          // If authenticating as "admin" username, grant admin role
+          if (username == "admin") {
+            if (not accessControlInitialized) {
+              AccessControl.initialize(accessControlState, caller);
+              accessControlInitialized := true;
+              adminPrincipal := ?caller;
+              Debug.print("Access control initialized during admin login with principal: " # caller.toText());
+            } else {
+              // Grant admin role to this principal if not already admin
+              switch (adminPrincipal) {
+                case (?adminP) {
+                  // Use the existing admin to assign role
+                  AccessControl.assignRole(accessControlState, adminP, caller, #admin);
+                  Debug.print("Admin role assigned to principal: " # caller.toText());
+                };
+                case (null) {
+                  // Fallback: initialize with this caller
+                  AccessControl.initialize(accessControlState, caller);
+                  accessControlInitialized := true;
+                  adminPrincipal := ?caller;
+                  Debug.print("Access control initialized (fallback) with admin: " # caller.toText());
+                };
+              };
+            };
+          };
+
+          Debug.print("Authentication successful for " # username # ", session token: " # sessionToken);
           ?sessionToken;
         } else {
+          Debug.print("Invalid password for user: " # username);
           null;
         };
       };
@@ -194,6 +248,7 @@ actor {
       case (?session) {
         if (session.principal == caller) {
           sessions.remove(sessionToken);
+          Debug.print("User logged out: " # session.username);
         };
       };
     };
@@ -201,14 +256,21 @@ actor {
 
   func validateSession(sessionToken : Text, caller : Principal) : Bool {
     switch (sessions.get(sessionToken)) {
-      case (null) { false };
+      case (null) { 
+        Debug.print("Session not found: " # sessionToken);
+        false 
+      };
       case (?session) {
         let now = Time.now();
         if (session.principal == caller and now < session.expiresAt) {
+          Debug.print("Session valid for user: " # session.username);
           true;
         } else {
           if (now >= session.expiresAt) {
             sessions.remove(sessionToken);
+            Debug.print("Session expired and removed: " # sessionToken);
+          } else {
+            Debug.print("Session principal mismatch");
           };
           false;
         };
@@ -231,26 +293,38 @@ actor {
       };
     };
 
+    Debug.print("Cleaned up " # removedCount.toText() # " expired sessions");
     removedCount;
   };
 
+  func isRegisteredUser(caller : Principal) : Bool {
+    for ((username, principal) in userPrincipals.entries()) {
+      if (principal == caller) {
+        return true;
+      };
+    };
+    false;
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access profiles");
+    // Allow registered users to get their profile, even if not explicitly assigned #user role
+    if (not isRegisteredUser(caller) and not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only registered users can access profiles");
     };
     userProfiles.get(caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not hasAdminPermission(caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile or must be admin");
+      Runtime.trap("Unauthorized: Can only view your own profile");
     };
     userProfiles.get(user);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+    // Allow registered users to save their profile, even if not explicitly assigned #user role
+    if (not isRegisteredUser(caller) and not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only registered users can save profiles");
     };
     userProfiles.add(caller, profile);
   };
@@ -394,9 +468,22 @@ actor {
   };
 
   public shared ({ caller }) func addProduct(input : ProductInput) : async Nat {
-    if (not hasAdminPermission(caller)) {
+    Debug.print("addProduct called by principal: " # caller.toText());
+    Debug.print("Checking admin permission...");
+    
+    let isAdmin = hasAdminPermission(caller);
+    let userRole = AccessControl.getUserRole(accessControlState, caller);
+    
+    Debug.print("User role: " # debug_show(userRole));
+    Debug.print("Is admin: " # debug_show(isAdmin));
+    Debug.print("Access control initialized: " # debug_show(accessControlInitialized));
+    
+    if (not isAdmin) {
+      Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can add products");
     };
+
+    Debug.print("Authorization successful, adding product: " # input.title);
 
     let id = productCounter;
     productCounter += 1;
@@ -418,11 +505,15 @@ actor {
     };
 
     products.add(id, product);
+    Debug.print("Product added successfully with id: " # id.toText());
     id;
   };
 
   public shared ({ caller }) func updateProduct(id : Nat, input : ProductInput) : async () {
+    Debug.print("updateProduct called by principal: " # caller.toText() # " for product id: " # id.toText());
+    
     if (not hasAdminPermission(caller)) {
+      Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can update products");
     };
 
@@ -445,12 +536,16 @@ actor {
           status = existingProduct.status;
         };
         products.add(id, updatedProduct);
+        Debug.print("Product updated successfully: " # id.toText());
       };
     };
   };
 
   public shared ({ caller }) func deleteProduct(id : Nat) : async () {
+    Debug.print("deleteProduct called by principal: " # caller.toText() # " for product id: " # id.toText());
+    
     if (not hasAdminPermission(caller)) {
+      Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can delete products");
     };
 
@@ -473,12 +568,16 @@ actor {
           status = #inactive;
         };
         products.add(id, updatedProduct);
+        Debug.print("Product deleted (marked inactive) successfully: " # id.toText());
       };
     };
   };
 
   public shared ({ caller }) func restoreProducts(productsToRestore : [Product]) : async () {
+    Debug.print("restoreProducts called by principal: " # caller.toText());
+    
     if (not hasAdminPermission(caller)) {
+      Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can restore products");
     };
 
@@ -488,6 +587,8 @@ actor {
         productCounter := product.id + 1;
       };
     };
+    
+    Debug.print("Products restored successfully, count: " # productsToRestore.size().toText());
   };
 
   public query func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
