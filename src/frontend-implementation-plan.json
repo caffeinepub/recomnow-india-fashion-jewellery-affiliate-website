@@ -1,21 +1,80 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Filter Button from Version 89 to ProductGrid",
+  "title": "Implement secure username/password authentication with registration",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
+      "summary": "Replace hardcoded admin credentials with secure registration system UI",
       "acceptanceCriteria": [
-        "Filter button is visible in the ProductGrid component",
-        "Button design and placement matches Version 89 implementation",
-        "Button functionality works as it did in Version 89"
+        "Remove hardcoded credentials (admin/admin123) from useAuth.ts",
+        "Add registration form UI with username, password, and password confirmation fields",
+        "Validate password strength (minimum 8 characters, mix of letters and numbers)",
+        "Prevent duplicate usernames during registration",
+        "Display success message after successful registration"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProductGrid.tsx",
+          "path": "frontend/src/hooks/useAuth.ts",
           "operation": "modify",
-          "description": "Add a Filter button to the ProductGrid component UI that matches Version 89 design. Place the button in the controls section alongside the existing sort and category controls. The button should toggle filter panel visibility and maintain consistency with the existing UI styling (gold-500 theme colors). Wire the button's onClick handler to toggle filter panel state."
+          "description": "Remove hardcoded admin credentials (admin/admin123) and update the authentication store to integrate with backend username/password authentication via addUser and authenticateUser backend capabilities. Add registration flow that validates password strength client-side before calling the backend. Store session tokens returned from authenticateUser in localStorage for persistence. Add error handling for duplicate usernames and weak passwords."
+        },
+        {
+          "path": "frontend/src/hooks/useBackendAuth.ts",
+          "operation": "create",
+          "description": "Create a new React Query hook for backend authentication operations. Implement useRegisterUser mutation that calls addUser backend capability with username and password. Implement useAuthenticateUser mutation that calls authenticateUser and stores the returned session token. Implement useLogout mutation that calls the logout backend capability with the session token. Include error handling and loading states for all mutations."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement secure session management frontend with token-based authentication",
+      "acceptanceCriteria": [
+        "Generate secure session tokens upon successful login",
+        "Store session tokens securely in the backend with expiration timestamps",
+        "Set session expiration to 24 hours by default",
+        "Validate session tokens on protected endpoints",
+        "Clear expired sessions automatically",
+        "Provide logout functionality that invalidates the session token"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useAuth.ts",
+          "operation": "modify",
+          "description": "Add session token management to the Zustand store. Store session tokens in localStorage after successful login via authenticateUser. Implement automatic token expiration checking (24 hour default) by storing login timestamp alongside the token. Add logout functionality that clears the session token from localStorage and calls the backend logout capability. Include session validation logic that checks token expiration before making authenticated requests."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Integrate session token validation into the actor initialization. Before creating the actor instance, check if a valid session token exists in useAuth store. If the token is expired (>24 hours old), automatically clear it and redirect to login. Pass the session token in authenticated requests to the backend for validation. Handle 401/403 responses by clearing expired tokens and redirecting to login."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Update AdminLogin component to include registration UI and connect to backend authentication",
+      "acceptanceCriteria": [
+        "Add toggle between login and registration modes",
+        "Display registration form with username, password, and confirm password fields",
+        "Show password strength indicator",
+        "Handle registration errors (duplicate username, weak password)",
+        "Automatically log in user after successful registration"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminLogin.tsx",
+          "operation": "modify",
+          "description": "Add a mode toggle between 'login' and 'register' views using state. In registration mode, display username field, password field, confirm password field, and a password strength indicator showing weak/medium/strong based on length and character mix. Validate that passwords match before submission. Wire the registration form to useRegisterUser mutation from useBackendAuth hook. On successful registration, automatically call useAuthenticateUser to log the user in. Display error messages for duplicate usernames or weak passwords. Preserve the existing Internet Identity login option as an alternative authentication method. Use responsive layout for both login and registration forms."
+        },
+        {
+          "path": "frontend/src/components/PasswordStrengthIndicator.tsx",
+          "operation": "create",
+          "description": "Create a reusable password strength indicator component that evaluates password strength based on length (minimum 8 characters) and character variety (letters, numbers, special characters). Display visual feedback with colored bar (red=weak, yellow=medium, green=strong) and text label. Accept password string as prop and return strength level. Use memoization to avoid unnecessary recalculations."
+        },
+        {
+          "path": "frontend/src/utils/passwordValidation.ts",
+          "operation": "create",
+          "description": "Create utility functions for password validation. Implement validatePasswordStrength that checks minimum 8 characters and mix of letters and numbers, returning strength enum (weak/medium/strong). Implement validatePasswordMatch that compares password and confirmation fields. Export validation error messages for UI display. Include regex patterns for password requirements."
         }
       ]
     }

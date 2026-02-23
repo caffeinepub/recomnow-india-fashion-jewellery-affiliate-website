@@ -46,6 +46,13 @@ export interface TransformationInput {
     context: Uint8Array;
     response: http_request_result;
 }
+export type ProductCategory = {
+    __kind__: "jewellery";
+    jewellery: JewelleryCategory;
+} | {
+    __kind__: "fashion";
+    fashion: FashionCategory;
+};
 export interface Product {
     id: bigint;
     mrp: bigint;
@@ -61,19 +68,19 @@ export interface Product {
     price: bigint;
     discountPercentage: bigint;
 }
-export enum ProductCategory {
-    jewellery = "jewellery",
+export enum FashionCategory {
+    kurtaKurtis = "kurtaKurtis",
     sarees = "sarees",
-    bottomWear = "bottomWear",
-    dressMaterial = "dressMaterial",
     festive = "festive",
-    kurtasKurtis = "kurtasKurtis",
     gowns = "gowns",
     salwarSuits = "salwarSuits",
-    sportswear = "sportswear",
+    sportsWear = "sportsWear",
     lehengaCholis = "lehengaCholis",
-    chunnisDupattas = "chunnisDupattas",
     westernWear = "westernWear"
+}
+export enum JewelleryCategory {
+    necklaces = "necklaces",
+    rings = "rings"
 }
 export enum ProductStatus {
     active = "active",
@@ -86,13 +93,16 @@ export enum UserRole {
 }
 export interface backendInterface {
     addProduct(input: ProductInput): Promise<bigint>;
+    addUser(username: string, password: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    authenticateUser(username: string, password: string): Promise<string | null>;
+    cleanupExpiredSessions(): Promise<bigint>;
     deleteProduct(id: bigint): Promise<void>;
     filterProducts(category: ProductCategory | null, minPrice: bigint | null, maxPrice: bigint | null, minDiscount: bigint | null, maxDiscount: bigint | null): Promise<Array<Product>>;
     getAllProducts(): Promise<Array<Product>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getFashionProducts(): Promise<Array<Product>>;
+    getFashionProducts(category: FashionCategory): Promise<Array<Product>>;
     getFeaturedProducts(): Promise<Array<Product>>;
     getProductById(id: bigint): Promise<Product>;
     getProductCounter(): Promise<bigint>;
@@ -102,6 +112,8 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeAccessControl(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    logout(sessionToken: string): Promise<void>;
+    removeUser(username: string): Promise<void>;
     restoreProducts(productsToRestore: Array<Product>): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchProducts(searchTerm: string): Promise<Array<Product>>;

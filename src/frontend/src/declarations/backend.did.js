@@ -19,19 +19,23 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
-export const ProductCategory = IDL.Variant({
-  'jewellery' : IDL.Null,
+export const JewelleryCategory = IDL.Variant({
+  'necklaces' : IDL.Null,
+  'rings' : IDL.Null,
+});
+export const FashionCategory = IDL.Variant({
+  'kurtaKurtis' : IDL.Null,
   'sarees' : IDL.Null,
-  'bottomWear' : IDL.Null,
-  'dressMaterial' : IDL.Null,
   'festive' : IDL.Null,
-  'kurtasKurtis' : IDL.Null,
   'gowns' : IDL.Null,
   'salwarSuits' : IDL.Null,
-  'sportswear' : IDL.Null,
+  'sportsWear' : IDL.Null,
   'lehengaCholis' : IDL.Null,
-  'chunnisDupattas' : IDL.Null,
   'westernWear' : IDL.Null,
+});
+export const ProductCategory = IDL.Variant({
+  'jewellery' : JewelleryCategory,
+  'fashion' : FashionCategory,
 });
 export const ProductInput = IDL.Record({
   'mrp' : IDL.Nat,
@@ -117,7 +121,10 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
+  'addUser' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'authenticateUser' : IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(IDL.Text)], []),
+  'cleanupExpiredSessions' : IDL.Func([], [IDL.Nat], []),
   'deleteProduct' : IDL.Func([IDL.Nat], [], []),
   'filterProducts' : IDL.Func(
       [
@@ -133,7 +140,11 @@ export const idlService = IDL.Service({
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getFashionProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+  'getFashionProducts' : IDL.Func(
+      [FashionCategory],
+      [IDL.Vec(Product)],
+      ['query'],
+    ),
   'getFeaturedProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getProductById' : IDL.Func([IDL.Nat], [Product], ['query']),
   'getProductCounter' : IDL.Func([], [IDL.Nat], ['query']),
@@ -159,6 +170,8 @@ export const idlService = IDL.Service({
     ),
   'initializeAccessControl' : IDL.Func([], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'logout' : IDL.Func([IDL.Text], [], []),
+  'removeUser' : IDL.Func([IDL.Text], [], []),
   'restoreProducts' : IDL.Func([IDL.Vec(Product)], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
@@ -184,19 +197,23 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
-  const ProductCategory = IDL.Variant({
-    'jewellery' : IDL.Null,
+  const JewelleryCategory = IDL.Variant({
+    'necklaces' : IDL.Null,
+    'rings' : IDL.Null,
+  });
+  const FashionCategory = IDL.Variant({
+    'kurtaKurtis' : IDL.Null,
     'sarees' : IDL.Null,
-    'bottomWear' : IDL.Null,
-    'dressMaterial' : IDL.Null,
     'festive' : IDL.Null,
-    'kurtasKurtis' : IDL.Null,
     'gowns' : IDL.Null,
     'salwarSuits' : IDL.Null,
-    'sportswear' : IDL.Null,
+    'sportsWear' : IDL.Null,
     'lehengaCholis' : IDL.Null,
-    'chunnisDupattas' : IDL.Null,
     'westernWear' : IDL.Null,
+  });
+  const ProductCategory = IDL.Variant({
+    'jewellery' : JewelleryCategory,
+    'fashion' : FashionCategory,
   });
   const ProductInput = IDL.Record({
     'mrp' : IDL.Nat,
@@ -279,7 +296,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     'addProduct' : IDL.Func([ProductInput], [IDL.Nat], []),
+    'addUser' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'authenticateUser' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(IDL.Text)],
+        [],
+      ),
+    'cleanupExpiredSessions' : IDL.Func([], [IDL.Nat], []),
     'deleteProduct' : IDL.Func([IDL.Nat], [], []),
     'filterProducts' : IDL.Func(
         [
@@ -295,7 +319,11 @@ export const idlFactory = ({ IDL }) => {
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getFashionProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+    'getFashionProducts' : IDL.Func(
+        [FashionCategory],
+        [IDL.Vec(Product)],
+        ['query'],
+      ),
     'getFeaturedProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getProductById' : IDL.Func([IDL.Nat], [Product], ['query']),
     'getProductCounter' : IDL.Func([], [IDL.Nat], ['query']),
@@ -321,6 +349,8 @@ export const idlFactory = ({ IDL }) => {
       ),
     'initializeAccessControl' : IDL.Func([], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'logout' : IDL.Func([IDL.Text], [], []),
+    'removeUser' : IDL.Func([IDL.Text], [], []),
     'restoreProducts' : IDL.Func([IDL.Vec(Product)], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),

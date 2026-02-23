@@ -21,7 +21,7 @@ const Hero = memo(() => {
       
       <div className="relative container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white drop-shadow-lg">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-lg" style={{ color: '#FF00FF' }}>
             Discover Premium Fashion & Jewellery
           </h2>
           <p className="text-lg md:text-xl text-white drop-shadow-md font-medium">
@@ -32,7 +32,7 @@ const Hero = memo(() => {
             <Button
               onClick={scrollToProducts}
               size="lg"
-              className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold text-base px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all"
+              className="bg-gradient-to-r from-gold-600 to-gold-700 text-pink-500 hover:from-gold-700 hover:to-gold-800 font-bold text-base px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all"
             >
               Shop Now
               <ExternalLink className="ml-2 h-5 w-5" />

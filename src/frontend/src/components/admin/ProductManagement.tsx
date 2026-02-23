@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useGetProducts, useDeleteProduct, useAddProduct, useUpdateProduct } from '../../hooks/useQueries';
-import { ProductCategory, type Product } from '../../backend';
+import { ProductCategory, FashionCategory, JewelleryCategory, type Product } from '../../backend';
 import { Trash2, Loader2, Package, Plus, Pencil, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,19 +23,20 @@ import {
 } from '@/components/ui/dialog';
 
 // Category display names mapping
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  [ProductCategory.sarees]: 'Sarees',
-  [ProductCategory.kurtasKurtis]: 'Kurtas & Kurtis',
-  [ProductCategory.jewellery]: 'Jewellery',
-  [ProductCategory.bottomWear]: 'Bottom Wear',
-  [ProductCategory.dressMaterial]: 'Dress Material',
-  [ProductCategory.festive]: 'Festive',
-  [ProductCategory.gowns]: 'Gowns',
-  [ProductCategory.salwarSuits]: 'Salwar Suits',
-  [ProductCategory.sportswear]: 'Sportswear',
-  [ProductCategory.lehengaCholis]: 'Lehenga Cholis',
-  [ProductCategory.chunnisDupattas]: 'Chunnis & Dupattas',
-  [ProductCategory.westernWear]: 'Western Wear',
+const FASHION_LABELS: Record<FashionCategory, string> = {
+  [FashionCategory.sarees]: 'Sarees',
+  [FashionCategory.kurtaKurtis]: 'Kurta & Kurtis',
+  [FashionCategory.festive]: 'Festive',
+  [FashionCategory.gowns]: 'Gowns',
+  [FashionCategory.salwarSuits]: 'Salwar Suits',
+  [FashionCategory.lehengaCholis]: 'Lehenga Cholis',
+  [FashionCategory.westernWear]: 'Western Wear',
+  [FashionCategory.sportsWear]: 'Sports Wear',
+};
+
+const JEWELLERY_LABELS: Record<JewelleryCategory, string> = {
+  [JewelleryCategory.rings]: 'Rings',
+  [JewelleryCategory.necklaces]: 'Necklaces',
 };
 
 export default function ProductManagement() {
@@ -57,7 +59,9 @@ export default function ProductManagement() {
     price: '',
     discountPercentage: '',
     mrp: '',
-    category: ProductCategory.sarees as ProductCategory,
+    mainCategory: 'fashion' as 'fashion' | 'jewellery',
+    fashionCategory: FashionCategory.sarees,
+    jewelleryCategory: JewelleryCategory.rings,
     affiliateUrl: '',
     isFeatured: false,
   });
@@ -70,17 +74,27 @@ export default function ProductManagement() {
     price: '',
     discountPercentage: '',
     mrp: '',
-    category: ProductCategory.sarees as ProductCategory,
+    mainCategory: 'fashion' as 'fashion' | 'jewellery',
+    fashionCategory: FashionCategory.sarees,
+    jewelleryCategory: JewelleryCategory.rings,
     affiliateUrl: '',
     isFeatured: false,
   });
 
-  const handleInputChange = (field: string, value: string | boolean | ProductCategory) => {
+  const handleInputChange = (field: string, value: string | boolean | FashionCategory | JewelleryCategory) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleEditInputChange = (field: string, value: string | boolean | ProductCategory) => {
+  const handleEditInputChange = (field: string, value: string | boolean | FashionCategory | JewelleryCategory) => {
     setEditFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getCategoryLabel = (category: ProductCategory): string => {
+    if (category.__kind__ === 'fashion') {
+      return FASHION_LABELS[category.fashion];
+    } else {
+      return JEWELLERY_LABELS[category.jewellery];
+    }
   };
 
   const validateForm = (data: typeof formData) => {
@@ -153,6 +167,14 @@ export default function ProductManagement() {
     return true;
   };
 
+  const buildCategory = (data: typeof formData): ProductCategory => {
+    if (data.mainCategory === 'fashion') {
+      return { __kind__: 'fashion', fashion: data.fashionCategory };
+    } else {
+      return { __kind__: 'jewellery', jewellery: data.jewelleryCategory };
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -170,7 +192,7 @@ export default function ProductManagement() {
         description: formData.description.trim() || undefined,
         imageUrl: formData.imageUrl.trim(),
         affiliateLink: formData.affiliateUrl.trim(),
-        category: formData.category,
+        category: buildCategory(formData),
         price: BigInt(Math.round(priceNum * 100)),
         discountPercentage: BigInt(Math.round(discountNum)),
         mrp: BigInt(Math.round(mrpNum * 100)),
@@ -185,7 +207,9 @@ export default function ProductManagement() {
         price: '',
         discountPercentage: '',
         mrp: '',
-        category: ProductCategory.sarees,
+        mainCategory: 'fashion',
+        fashionCategory: FashionCategory.sarees,
+        jewelleryCategory: JewelleryCategory.rings,
         affiliateUrl: '',
         isFeatured: false,
       });
@@ -196,6 +220,7 @@ export default function ProductManagement() {
 
   const handleEditClick = (product: Product) => {
     setProductToEdit(product);
+    const mainCategory = product.category.__kind__;
     setEditFormData({
       title: product.title,
       description: product.description || '',
@@ -203,7 +228,9 @@ export default function ProductManagement() {
       price: (Number(product.price) / 100).toFixed(2),
       discountPercentage: Number(product.discountPercentage).toString(),
       mrp: (Number(product.mrp) / 100).toFixed(2),
-      category: product.category,
+      mainCategory,
+      fashionCategory: mainCategory === 'fashion' ? product.category.fashion : FashionCategory.sarees,
+      jewelleryCategory: mainCategory === 'jewellery' ? product.category.jewellery : JewelleryCategory.rings,
       affiliateUrl: product.affiliateLink,
       isFeatured: product.isFeatured,
     });
@@ -230,7 +257,7 @@ export default function ProductManagement() {
         description: editFormData.description.trim() || undefined,
         imageUrl: editFormData.imageUrl.trim(),
         affiliateLink: editFormData.affiliateUrl.trim(),
-        category: editFormData.category,
+        category: buildCategory(editFormData),
         price: BigInt(Math.round(priceNum * 100)),
         discountPercentage: BigInt(Math.round(discountNum)),
         mrp: BigInt(Math.round(mrpNum * 100)),
@@ -296,21 +323,58 @@ export default function ProductManagement() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Category <span className="text-destructive">*</span>
+                Main Category <span className="text-destructive">*</span>
               </label>
               <select
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value as ProductCategory)}
+                value={formData.mainCategory}
+                onChange={(e) => handleInputChange('mainCategory', e.target.value)}
                 className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
                 required
               >
-                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
+                <option value="fashion">Fashion</option>
+                <option value="jewellery">Jewellery</option>
               </select>
             </div>
+
+            {formData.mainCategory === 'fashion' && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Fashion Category <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={formData.fashionCategory}
+                  onChange={(e) => handleInputChange('fashionCategory', e.target.value as FashionCategory)}
+                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
+                  required
+                >
+                  {Object.entries(FASHION_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {formData.mainCategory === 'jewellery' && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Jewellery Category <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={formData.jewelleryCategory}
+                  onChange={(e) => handleInputChange('jewelleryCategory', e.target.value as JewelleryCategory)}
+                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
+                  required
+                >
+                  {Object.entries(JEWELLERY_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
@@ -469,7 +533,7 @@ export default function ProductManagement() {
                       <div>
                         <h4 className="font-bold text-foreground">{product.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {CATEGORY_LABELS[product.category]}
+                          {getCategoryLabel(product.category)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -508,26 +572,25 @@ export default function ProductManagement() {
                         </span>
                       </div>
                       <div>
-                        <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">
+                        <span className="text-muted-foreground">Discount: </span>
+                        <span className="font-bold text-green-600">
                           {Number(product.discountPercentage)}% OFF
                         </span>
                       </div>
                       {product.isFeatured && (
-                        <div>
-                          <span className="px-2 py-1 rounded-full bg-gold-100 text-gold-800 text-xs font-bold">
-                            Featured
-                          </span>
-                        </div>
+                        <span className="px-2 py-1 bg-gold-100 text-gold-800 rounded-full text-xs font-bold">
+                          Featured
+                        </span>
                       )}
                     </div>
                     <a
                       href={product.affiliateLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-gold-600 hover:text-gold-700"
+                      className="inline-flex items-center gap-1 text-sm text-gold-700 hover:text-gold-800 font-medium"
                     >
-                      <ExternalLink className="h-3 w-3" />
                       View on Amazon
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
                 </div>
@@ -551,7 +614,6 @@ export default function ProductManagement() {
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteProduct.isPending}
             >
               {deleteProduct.isPending ? (
                 <>
@@ -575,7 +637,6 @@ export default function ProductManagement() {
               Update the product information below.
             </DialogDescription>
           </DialogHeader>
-
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -593,21 +654,58 @@ export default function ProductManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Category <span className="text-destructive">*</span>
+                  Main Category <span className="text-destructive">*</span>
                 </label>
                 <select
-                  value={editFormData.category}
-                  onChange={(e) => handleEditInputChange('category', e.target.value as ProductCategory)}
+                  value={editFormData.mainCategory}
+                  onChange={(e) => handleEditInputChange('mainCategory', e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
                   required
                 >
-                  {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
+                  <option value="fashion">Fashion</option>
+                  <option value="jewellery">Jewellery</option>
                 </select>
               </div>
+
+              {editFormData.mainCategory === 'fashion' && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Fashion Category <span className="text-destructive">*</span>
+                  </label>
+                  <select
+                    value={editFormData.fashionCategory}
+                    onChange={(e) => handleEditInputChange('fashionCategory', e.target.value as FashionCategory)}
+                    className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
+                    required
+                  >
+                    {Object.entries(FASHION_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {editFormData.mainCategory === 'jewellery' && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Jewellery Category <span className="text-destructive">*</span>
+                  </label>
+                  <select
+                    value={editFormData.jewelleryCategory}
+                    onChange={(e) => handleEditInputChange('jewelleryCategory', e.target.value as JewelleryCategory)}
+                    className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-gold-600"
+                    required
+                  >
+                    {Object.entries(JEWELLERY_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
@@ -708,28 +806,28 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <button
+            <div className="flex gap-2 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
                 type="submit"
                 disabled={updateProduct.isPending}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-gold-600 to-gold-700 text-white font-medium hover:from-gold-700 hover:to-gold-800 transition-all disabled:opacity-50"
+                className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800"
               >
                 {updateProduct.isPending ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Updating...
                   </>
                 ) : (
                   'Update Product'
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditDialogOpen(false)}
-                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
-              >
-                Cancel
-              </button>
+              </Button>
             </div>
           </form>
         </DialogContent>

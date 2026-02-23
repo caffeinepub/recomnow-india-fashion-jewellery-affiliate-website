@@ -1,30 +1,68 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-22T05:31:39.196Z",
+  "generatedAt": "2026-02-23T06:29:25.171Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 0,
+    "total": 5,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
-        "status": "missing",
+        "summary": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProductGrid.tsx"
+          "frontend/src/hooks/useAuth.ts",
+          "frontend/src/hooks/useBackendAuth.ts"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/hooks/useAuth.ts",
+          "frontend/src/hooks/useBackendAuth.ts"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Restore the product catalog data from Version 89, including all products that were present in that version",
+        "summary": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Implement secure session management with token-based authentication that expires after a reasonable period",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useAuth.ts",
+          "frontend/src/hooks/useActor.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useAuth.ts"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AdminLogin.tsx",
+          "frontend/src/components/PasswordStrengthIndicator.tsx",
+          "frontend/src/utils/passwordValidation.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AdminLogin.tsx",
+          "frontend/src/components/PasswordStrengthIndicator.tsx",
+          "frontend/src/utils/passwordValidation.ts"
+        ]
       }
     ]
   },
@@ -37,18 +75,15 @@
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/BlogPostModal.tsx",
-    "frontend/src/components/BlogTeaser.tsx",
-    "frontend/src/components/Footer.tsx",
-    "frontend/src/components/PageModal.tsx",
-    "frontend/src/components/admin/BlogManagement.tsx",
-    "frontend/src/components/admin/NewsletterManagement.tsx",
-    "frontend/src/components/admin/SitePagesManagement.tsx",
+    "frontend/src/components/AdminLogin.tsx",
+    "frontend/src/components/AdminPanel.tsx",
+    "frontend/src/components/PasswordStrengthIndicator.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useAuth.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/SitemapPage.tsx",
+    "frontend/src/hooks/useBackendAuth.ts",
+    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/utils/passwordValidation.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

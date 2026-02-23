@@ -1,10 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Restore the Filter button and product catalog from Version 89.
+**Goal:** Implement secure username/password authentication with registration functionality alongside the existing Internet Identity system.
 
 **Planned changes:**
-- Add Filter button to ProductGrid component matching Version 89 design and functionality
-- Restore product catalog data from Version 89 with all original products
+- Add user registration system with username and password fields
+- Implement password hashing in the backend using SHA-256 with salt
+- Create backend user management functions (registerUser, authenticateUser) with stable storage
+- Implement secure session token management with 24-hour expiration
+- Update AdminLogin component to support both login and registration modes with password strength validation
 
-**User-visible outcome:** Users can filter products using the restored Filter button and browse the complete product catalog from Version 89.
+**User-visible outcome:** Admins can create their own accounts with username and password, log in securely with session management, and use either the new authentication system or Internet Identity to access the admin panel.

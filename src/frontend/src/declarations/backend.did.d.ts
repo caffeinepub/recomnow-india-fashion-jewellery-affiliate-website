@@ -11,6 +11,16 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export type ExternalBlob = Uint8Array;
+export type FashionCategory = { 'kurtaKurtis' : null } |
+  { 'sarees' : null } |
+  { 'festive' : null } |
+  { 'gowns' : null } |
+  { 'salwarSuits' : null } |
+  { 'sportsWear' : null } |
+  { 'lehengaCholis' : null } |
+  { 'westernWear' : null };
+export type JewelleryCategory = { 'necklaces' : null } |
+  { 'rings' : null };
 export interface Product {
   'id' : bigint,
   'mrp' : bigint,
@@ -26,18 +36,8 @@ export interface Product {
   'price' : bigint,
   'discountPercentage' : bigint,
 }
-export type ProductCategory = { 'jewellery' : null } |
-  { 'sarees' : null } |
-  { 'bottomWear' : null } |
-  { 'dressMaterial' : null } |
-  { 'festive' : null } |
-  { 'kurtasKurtis' : null } |
-  { 'gowns' : null } |
-  { 'salwarSuits' : null } |
-  { 'sportswear' : null } |
-  { 'lehengaCholis' : null } |
-  { 'chunnisDupattas' : null } |
-  { 'westernWear' : null };
+export type ProductCategory = { 'jewellery' : JewelleryCategory } |
+  { 'fashion' : FashionCategory };
 export interface ProductInput {
   'mrp' : bigint,
   'title' : string,
@@ -98,7 +98,10 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   'addProduct' : ActorMethod<[ProductInput], bigint>,
+  'addUser' : ActorMethod<[string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'authenticateUser' : ActorMethod<[string, string], [] | [string]>,
+  'cleanupExpiredSessions' : ActorMethod<[], bigint>,
   'deleteProduct' : ActorMethod<[bigint], undefined>,
   'filterProducts' : ActorMethod<
     [
@@ -113,7 +116,7 @@ export interface _SERVICE {
   'getAllProducts' : ActorMethod<[], Array<Product>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getFashionProducts' : ActorMethod<[], Array<Product>>,
+  'getFashionProducts' : ActorMethod<[FashionCategory], Array<Product>>,
   'getFeaturedProducts' : ActorMethod<[], Array<Product>>,
   'getProductById' : ActorMethod<[bigint], Product>,
   'getProductCounter' : ActorMethod<[], bigint>,
@@ -123,6 +126,8 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initializeAccessControl' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'logout' : ActorMethod<[string], undefined>,
+  'removeUser' : ActorMethod<[string], undefined>,
   'restoreProducts' : ActorMethod<[Array<Product>], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchProducts' : ActorMethod<[string], Array<Product>>,

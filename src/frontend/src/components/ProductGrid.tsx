@@ -1,12 +1,13 @@
 import { useState, memo, useCallback, useMemo } from 'react';
-import { useGetFashionProducts, useGetProductsByCategory } from '../hooks/useQueries';
-import { ProductCategory } from '../backend';
-import { ExternalLink, Loader2, Package, Filter, X, Star, Zap } from 'lucide-react';
+import { useGetAllProducts } from '../hooks/useQueries';
+import { ProductCategory, FashionCategory, JewelleryCategory } from '../backend';
+import { ExternalLink, Loader2, Package, Filter, X, Star, Zap, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
 import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { Slider } from './ui/slider';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import OptimizedImage from './OptimizedImage';
 
 // Memoized ProductCard component to prevent unnecessary re-renders
@@ -15,12 +16,12 @@ const ProductCard = memo(({ product, getCategoryLabel }: { product: any; getCate
     {/* Badge Overlay */}
     <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
       {Number(product.discountPercentage) >= 50 && (
-        <div className="bg-gradient-to-r from-gold-600 to-gold-700 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+        <div className="bg-gradient-to-r from-gold-600 to-gold-700 text-navy-900 px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
           <Zap className="h-3 w-3" />
           {Number(product.discountPercentage)}% OFF
         </div>
       )}
-      <div className="bg-navy-800 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+      <div className="bg-navy-800 text-navy-900 px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
         <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
         Genuine
       </div>
@@ -60,7 +61,7 @@ const ProductCard = memo(({ product, getCategoryLabel }: { product: any; getCate
           href={product.affiliateLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-1 w-full px-4 py-3 rounded-full bg-gradient-to-r from-gold-600 to-gold-700 text-white text-sm font-bold hover:from-gold-700 hover:to-gold-800 transition-all shadow-md hover:shadow-lg"
+          className="inline-flex items-center justify-center gap-1 w-full px-4 py-3 rounded-full bg-green-400 text-pink-500 text-sm font-bold hover:bg-green-500 transition-all shadow-md hover:shadow-lg"
           aria-label={`Shop ${product.title} on Amazon`}
         >
           Shop Now on Amazon
@@ -102,19 +103,25 @@ const EmptyState = memo(({ hasActiveFilters, onClearFilters }: { hasActiveFilter
 EmptyState.displayName = 'EmptyState';
 
 const ProductGrid = memo(() => {
-  const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
+  const [selectedFashionCategories, setSelectedFashionCategories] = useState<FashionCategory[]>([]);
+  const [selectedJewelleryCategories, setSelectedJewelleryCategories] = useState<JewelleryCategory[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [fashionExpanded, setFashionExpanded] = useState(true);
+  const [jewelleryExpanded, setJewelleryExpanded] = useState(true);
 
-  const { data: fashionProducts, isLoading: fashionLoading, error: fashionError } = useGetFashionProducts();
-  const { data: jewelleryProducts, isLoading: jewelleryLoading, error: jewelleryError } = useGetProductsByCategory(ProductCategory.jewellery);
-  const { data: festiveProducts, isLoading: festiveLoading, error: festiveError } = useGetProductsByCategory(ProductCategory.festive);
+  const { data: allProducts, isLoading, error } = useGetAllProducts();
 
-  const isLoading = fashionLoading || jewelleryLoading || festiveLoading;
-  const hasError = fashionError || jewelleryError || festiveError;
+  const handleFashionCategoryToggle = useCallback((category: FashionCategory) => {
+    setSelectedFashionCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  }, []);
 
-  const handleCategoryToggle = useCallback((category: ProductCategory) => {
-    setSelectedCategories(prev => 
+  const handleJewelleryCategoryToggle = useCallback((category: JewelleryCategory) => {
+    setSelectedJewelleryCategories(prev => 
       prev.includes(category) 
         ? prev.filter(c => c !== category)
         : [...prev, category]
@@ -122,24 +129,57 @@ const ProductGrid = memo(() => {
   }, []);
 
   const handleClearFilters = useCallback(() => {
-    setSelectedCategories([]);
+    setSelectedFashionCategories([]);
+    setSelectedJewelleryCategories([]);
     setPriceRange([0, 10000]);
   }, []);
 
   const hasActiveFilters = useMemo(() => 
-    selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 10000,
-    [selectedCategories.length, priceRange]
+    selectedFashionCategories.length > 0 || selectedJewelleryCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 10000,
+    [selectedFashionCategories.length, selectedJewelleryCategories.length, priceRange]
   );
 
-  const filterProducts = useCallback((products: any[] | undefined) => {
-    if (!products) return [];
-    
-    let filtered = products;
+  const getCategoryLabel = useCallback((category: ProductCategory): string => {
+    if (category.__kind__ === 'fashion') {
+      const fashionLabels: Record<FashionCategory, string> = {
+        [FashionCategory.sarees]: 'Sarees',
+        [FashionCategory.kurtaKurtis]: 'Kurta & Kurtis',
+        [FashionCategory.festive]: 'Festive',
+        [FashionCategory.gowns]: 'Gowns',
+        [FashionCategory.salwarSuits]: 'Salwar Suits',
+        [FashionCategory.lehengaCholis]: 'Lehenga Cholis',
+        [FashionCategory.westernWear]: 'Western Wear',
+        [FashionCategory.sportsWear]: 'Sports Wear',
+      };
+      return fashionLabels[category.fashion];
+    } else {
+      const jewelleryLabels: Record<JewelleryCategory, string> = {
+        [JewelleryCategory.rings]: 'Rings',
+        [JewelleryCategory.necklaces]: 'Necklaces',
+      };
+      return jewelleryLabels[category.jewellery];
+    }
+  }, []);
 
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter(p => selectedCategories.includes(p.category));
+  const filteredProducts = useMemo(() => {
+    if (!allProducts) return [];
+    
+    let filtered = allProducts;
+
+    // Filter by category
+    if (selectedFashionCategories.length > 0 || selectedJewelleryCategories.length > 0) {
+      filtered = filtered.filter(p => {
+        if (p.category.__kind__ === 'fashion' && selectedFashionCategories.length > 0) {
+          return selectedFashionCategories.includes(p.category.fashion);
+        }
+        if (p.category.__kind__ === 'jewellery' && selectedJewelleryCategories.length > 0) {
+          return selectedJewelleryCategories.includes(p.category.jewellery);
+        }
+        return false;
+      });
     }
 
+    // Filter by price
     const minPrice = priceRange[0] * 100;
     const maxPrice = priceRange[1] * 100;
     filtered = filtered.filter(p => {
@@ -148,38 +188,35 @@ const ProductGrid = memo(() => {
     });
 
     return filtered;
-  }, [selectedCategories, priceRange]);
+  }, [allProducts, selectedFashionCategories, selectedJewelleryCategories, priceRange]);
 
-  const filteredFashionProducts = useMemo(() => filterProducts(fashionProducts), [filterProducts, fashionProducts]);
-  const filteredJewelleryProducts = useMemo(() => filterProducts(jewelleryProducts), [filterProducts, jewelleryProducts]);
-  const filteredFestiveProducts = useMemo(() => filterProducts(festiveProducts), [filterProducts, festiveProducts]);
-
-  const getCategoryLabel = useCallback((category: ProductCategory): string => {
-    const labels: Record<ProductCategory, string> = {
-      [ProductCategory.bottomWear]: 'Bottom Wear',
-      [ProductCategory.chunnisDupattas]: 'Chunnis & Dupattas',
-      [ProductCategory.dressMaterial]: 'Dress Material',
-      [ProductCategory.gowns]: 'Gowns',
-      [ProductCategory.kurtasKurtis]: 'Kurtas & Kurtis',
-      [ProductCategory.lehengaCholis]: 'Lehenga Cholis',
-      [ProductCategory.salwarSuits]: 'Salwar Suits',
-      [ProductCategory.sarees]: 'Sarees',
-      [ProductCategory.westernWear]: 'Western Wear',
-      [ProductCategory.sportswear]: 'Sportswear',
-      [ProductCategory.jewellery]: 'Jewellery',
-      [ProductCategory.festive]: 'Festive',
-    };
-    return labels[category] || category;
-  }, []);
-
-  const categories = useMemo(() => Object.values(ProductCategory), []);
-
-  const totalProducts = useMemo(() => 
-    filteredFashionProducts.length + filteredJewelleryProducts.length + filteredFestiveProducts.length,
-    [filteredFashionProducts.length, filteredJewelleryProducts.length, filteredFestiveProducts.length]
+  const fashionProducts = useMemo(() => 
+    filteredProducts.filter(p => p.category.__kind__ === 'fashion'),
+    [filteredProducts]
   );
 
-  if (hasError) {
+  const jewelleryProducts = useMemo(() => 
+    filteredProducts.filter(p => p.category.__kind__ === 'jewellery'),
+    [filteredProducts]
+  );
+
+  const fashionCategoryOptions = useMemo(() => [
+    { value: FashionCategory.sarees, label: 'Sarees' },
+    { value: FashionCategory.kurtaKurtis, label: 'Kurta & Kurtis' },
+    { value: FashionCategory.festive, label: 'Festive' },
+    { value: FashionCategory.gowns, label: 'Gowns' },
+    { value: FashionCategory.salwarSuits, label: 'Salwar Suits' },
+    { value: FashionCategory.lehengaCholis, label: 'Lehenga Cholis' },
+    { value: FashionCategory.westernWear, label: 'Western Wear' },
+    { value: FashionCategory.sportsWear, label: 'Sports Wear' },
+  ], []);
+
+  const jewelleryCategoryOptions = useMemo(() => [
+    { value: JewelleryCategory.rings, label: 'Rings' },
+    { value: JewelleryCategory.necklaces, label: 'Necklaces' },
+  ], []);
+
+  if (error) {
     return (
       <section className="py-12 px-4" aria-labelledby="products-heading">
         <div className="container mx-auto">
@@ -201,7 +238,7 @@ const ProductGrid = memo(() => {
               Featured Products
             </h2>
             <p className="text-navy-700 mt-2">
-              {isLoading ? 'Loading...' : `${totalProducts} products available`}
+              {isLoading ? 'Loading...' : `${filteredProducts.length} products available`}
             </p>
           </div>
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
@@ -211,7 +248,7 @@ const ProductGrid = memo(() => {
                 className="border-gold-500 text-gold-800 hover:bg-gold-100 font-semibold"
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Filters {hasActiveFilters && `(${selectedCategories.length > 0 ? selectedCategories.length : ''})`}
+                Filters {hasActiveFilters && `(${selectedFashionCategories.length + selectedJewelleryCategories.length})`}
               </Button>
             </SheetTrigger>
             <SheetContent className="overflow-y-auto bg-white">
@@ -222,11 +259,11 @@ const ProductGrid = memo(() => {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <Label className="text-base font-bold text-navy-900">Categories</Label>
-                    {selectedCategories.length > 0 && (
+                    {hasActiveFilters && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedCategories([])}
+                        onClick={handleClearFilters}
                         className="text-gold-700 hover:text-gold-800 hover:bg-gold-50"
                       >
                         <X className="h-4 w-4 mr-1" />
@@ -234,24 +271,58 @@ const ProductGrid = memo(() => {
                       </Button>
                     )}
                   </div>
-                  <div className="space-y-3">
-                    {categories.map((category) => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={category}
-                          checked={selectedCategories.includes(category)}
-                          onCheckedChange={() => handleCategoryToggle(category)}
-                          className="border-gold-500 data-[state=checked]:bg-gold-600"
-                        />
-                        <label
-                          htmlFor={category}
-                          className="text-sm font-medium text-navy-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {getCategoryLabel(category)}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                  
+                  {/* Fashion Category */}
+                  <Collapsible open={fashionExpanded} onOpenChange={setFashionExpanded} className="mb-4">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-gold-50 rounded-lg transition-colors">
+                      <span className="font-semibold text-navy-900">Fashion</span>
+                      {fashionExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-4 pt-2 space-y-3">
+                      {fashionCategoryOptions.map((option) => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`fashion-${option.value}`}
+                            checked={selectedFashionCategories.includes(option.value)}
+                            onCheckedChange={() => handleFashionCategoryToggle(option.value)}
+                            className="border-gold-500 data-[state=checked]:bg-gold-600"
+                          />
+                          <label
+                            htmlFor={`fashion-${option.value}`}
+                            className="text-sm font-medium text-navy-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {option.label}
+                          </label>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Jewellery Category */}
+                  <Collapsible open={jewelleryExpanded} onOpenChange={setJewelleryExpanded}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-gold-50 rounded-lg transition-colors">
+                      <span className="font-semibold text-navy-900">Jewellery</span>
+                      {jewelleryExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-4 pt-2 space-y-3">
+                      {jewelleryCategoryOptions.map((option) => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`jewellery-${option.value}`}
+                            checked={selectedJewelleryCategories.includes(option.value)}
+                            onCheckedChange={() => handleJewelleryCategoryToggle(option.value)}
+                            className="border-gold-500 data-[state=checked]:bg-gold-600"
+                          />
+                          <label
+                            htmlFor={`jewellery-${option.value}`}
+                            className="text-sm font-medium text-navy-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {option.label}
+                          </label>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
 
                 <div>
@@ -264,7 +335,7 @@ const ProductGrid = memo(() => {
                     step={100}
                     value={priceRange}
                     onValueChange={(value) => setPriceRange(value as [number, number])}
-                    className="mt-2"
+                    className="mt-2 price-range-slider"
                   />
                 </div>
 
@@ -291,43 +362,30 @@ const ProductGrid = memo(() => {
 
         {isLoading ? (
           <LoadingGrid />
-        ) : totalProducts === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <EmptyState hasActiveFilters={hasActiveFilters} onClearFilters={handleClearFilters} />
         ) : (
           <div className="space-y-12">
-            {filteredFashionProducts.length > 0 && (
+            {fashionProducts.length > 0 && (
               <div>
                 <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
                   Fashion Collection
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredFashionProducts.map((product) => (
+                  {fashionProducts.map((product) => (
                     <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
                   ))}
                 </div>
               </div>
             )}
 
-            {filteredJewelleryProducts.length > 0 && (
+            {jewelleryProducts.length > 0 && (
               <div>
                 <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
                   Jewellery Collection
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredJewelleryProducts.map((product) => (
-                    <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredFestiveProducts.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-bold mb-6 text-navy-900 border-b-2 border-gold-400 pb-2">
-                  Festive Collection
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredFestiveProducts.map((product) => (
+                  {jewelleryProducts.map((product) => (
                     <ProductCard key={product.id.toString()} product={product} getCategoryLabel={getCategoryLabel} />
                   ))}
                 </div>

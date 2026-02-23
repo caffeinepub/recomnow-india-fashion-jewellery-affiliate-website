@@ -1,53 +1,121 @@
 {
   "kind": "build_request",
-  "title": "Add Filter button from Version 89 and restore Version 89 product catalog",
-  "priority": "normal",
+  "title": "Implement secure username/password authentication with registration",
+  "projectName": "Fashion Store Admin",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
+      "text": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-final"
+          "msg-user-final"
         ],
         "quotes": [
-          "Add a Filter button as Version 89"
+          "A proper user registration system where I create my own account"
         ]
       },
       "acceptanceCriteria": [
-        "Filter button is visible in the ProductGrid component",
-        "Button design and placement matches Version 89 implementation",
-        "Button functionality works as it did in Version 89"
+        "Remove hardcoded credentials (admin/admin123) from useAuth.ts",
+        "Add registration form UI with username, password, and password confirmation fields",
+        "Validate password strength (minimum 8 characters, mix of letters and numbers)",
+        "Prevent duplicate usernames during registration",
+        "Display success message after successful registration"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Restore the product catalog data from Version 89, including all products that were present in that version",
+      "text": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-final"
+          "msg-user-final"
         ],
         "quotes": [
-          "reload products from version 89"
+          "Password hashing (never storing passwords in plain text)"
         ]
       },
       "acceptanceCriteria": [
-        "All products from Version 89 are present in the backend",
-        "Product data matches Version 89 (titles, prices, categories, images, URLs)",
-        "Products display correctly in the ProductGrid"
+        "Hash all passwords before storing in backend state",
+        "Use salt with each password hash for additional security",
+        "Verify passwords by comparing hashed values during login",
+        "Never expose plain text passwords in any API response or log"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-user-final"
+        ],
+        "quotes": [
+          "A proper user registration system where I create my own account"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Add registerUser function that accepts username and password, hashes the password, and stores the user",
+        "Add authenticateUser function that verifies username and hashed password",
+        "Store users in stable storage to persist across upgrades",
+        "Return appropriate error messages for duplicate usernames or invalid credentials"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement secure session management with token-based authentication that expires after a reasonable period",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-user-final"
+        ],
+        "quotes": [
+          "Secure session management"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Generate secure session tokens upon successful login",
+        "Store session tokens securely in the backend with expiration timestamps",
+        "Set session expiration to 24 hours by default",
+        "Validate session tokens on protected endpoints",
+        "Clear expired sessions automatically",
+        "Provide logout functionality that invalidates the session token"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-final"
+        ],
+        "quotes": [
+          "A proper user registration system where I create my own account"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Add toggle between login and registration modes",
+        "Display registration form with username, password, and confirm password fields",
+        "Show password strength indicator",
+        "Handle registration errors (duplicate username, weak password)",
+        "Automatically log in user after successful registration"
       ]
     }
   ],
   "constraints": [
-    "Must reference Version 89 implementation details for both Filter button and product data",
-    "Maintain compatibility with existing ProductGrid filtering and sorting functionality"
+    "Preserve existing Internet Identity authentication option alongside new username/password system",
+    "Do not modify Internet Identity authentication logic in useInternetIdentity.ts",
+    "Maintain existing role-based access control for admin panel",
+    "Keep current product management functionality intact"
   ],
   "nonGoals": [
-    "Creating new filter functionality beyond what existed in Version 89",
-    "Modifying product data structure or schema",
-    "Changing overall ProductGrid layout or design"
+    "Implementing password reset functionality",
+    "Adding email verification",
+    "Creating user roles beyond admin",
+    "Implementing two-factor authentication",
+    "Adding OAuth or social login options"
   ],
   "imageRequirements": {
     "required": [],

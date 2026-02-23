@@ -6,13 +6,15 @@ import Nat "mo:core/Nat";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
 import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
-import MixinStorage "blob-storage/Mixin";
 import Migration "migration";
+import MixinStorage "blob-storage/Mixin";
 
+// Add explicit migration in "-overrides" file
 (with migration = Migration.run)
 actor {
   include MixinStorage();
@@ -23,18 +25,24 @@ actor {
   };
 
   public type ProductCategory = {
-    #bottomWear;
-    #chunnisDupattas;
-    #dressMaterial;
-    #gowns;
-    #kurtasKurtis;
-    #lehengaCholis;
-    #salwarSuits;
+    #fashion : FashionCategory;
+    #jewellery : JewelleryCategory;
+  };
+
+  public type FashionCategory = {
     #sarees;
-    #westernWear;
-    #sportswear;
-    #jewellery;
+    #kurtaKurtis;
     #festive;
+    #gowns;
+    #salwarSuits;
+    #lehengaCholis;
+    #westernWear;
+    #sportsWear;
+  };
+
+  public type JewelleryCategory = {
+    #rings;
+    #necklaces;
   };
 
   public type Product = {
@@ -73,6 +81,7 @@ actor {
     principal : Principal;
     username : Text;
     createdAt : Int;
+    expiresAt : Int;
   };
 
   module Product {
@@ -86,23 +95,25 @@ actor {
   };
 
   let products = Map.empty<Nat, Product>();
-  var productCounter = 227;
+  var productCounter = 227 : Nat;
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let accessControlState = AccessControl.initState();
 
   var sessions = Map.empty<Text, SessionInfo>();
+  var users = Map.empty<Text, Text>();
   var sessionCounter : Nat = 0;
 
-  var authenticatedAdmins = Map.empty<Principal, Bool>();
-
   var accessControlInitialized : Bool = false;
+
+  let SESSION_DURATION : Int = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
 
   public shared ({ caller }) func initializeAccessControl() : async () {
     if (accessControlInitialized) {
       Runtime.trap("Access control already initialized");
     };
     AccessControl.initialize(accessControlState, caller);
+    users.add("admin", "admin");
     accessControlInitialized := true;
   };
 
@@ -115,18 +126,112 @@ actor {
   };
 
   public query ({ caller }) func isCallerAdmin() : async Bool {
-    AccessControl.isAdmin(accessControlState, caller) or isAuthenticatedAdmin(caller);
-  };
-
-  func isAuthenticatedAdmin(principal : Principal) : Bool {
-    switch (authenticatedAdmins.get(principal)) {
-      case (null) { false };
-      case (?isAdmin) { isAdmin };
-    };
+    AccessControl.isAdmin(accessControlState, caller);
   };
 
   func hasAdminPermission(caller : Principal) : Bool {
-    AccessControl.hasPermission(accessControlState, caller, #admin) or isAuthenticatedAdmin(caller);
+    AccessControl.hasPermission(accessControlState, caller, #admin);
+  };
+
+  public shared ({ caller }) func addUser(username : Text, password : Text) : async () {
+    if (not hasAdminPermission(caller)) {
+      Runtime.trap("Unauthorized: Only admins can add users");
+    };
+
+    switch (users.get(username)) {
+      case (?_) {
+        Runtime.trap("User already exists");
+      };
+      case (null) {
+        users.add(username, password);
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeUser(username : Text) : async () {
+    if (not hasAdminPermission(caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove users");
+    };
+
+    if (username == "admin") {
+      Runtime.trap("Cannot remove default admin user");
+    };
+
+    users.remove(username);
+  };
+
+  public shared ({ caller }) func authenticateUser(username : Text, password : Text) : async ?Text {
+    switch (users.get(username)) {
+      case (null) {
+        null;
+      };
+      case (?storedPassword) {
+        if (storedPassword == password) {
+          let sessionToken = username.concat(sessionCounter.toText());
+          sessionCounter += 1;
+
+          let now = Time.now();
+          let session : SessionInfo = {
+            principal = caller;
+            username = username;
+            createdAt = now;
+            expiresAt = now + SESSION_DURATION;
+          };
+
+          sessions.add(sessionToken, session);
+
+          ?sessionToken;
+        } else {
+          null;
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func logout(sessionToken : Text) : async () {
+    switch (sessions.get(sessionToken)) {
+      case (null) {};
+      case (?session) {
+        if (session.principal == caller) {
+          sessions.remove(sessionToken);
+        };
+      };
+    };
+  };
+
+  func validateSession(sessionToken : Text, caller : Principal) : Bool {
+    switch (sessions.get(sessionToken)) {
+      case (null) { false };
+      case (?session) {
+        let now = Time.now();
+        if (session.principal == caller and now < session.expiresAt) {
+          true;
+        } else {
+          if (now >= session.expiresAt) {
+            sessions.remove(sessionToken);
+          };
+          false;
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func cleanupExpiredSessions() : async Nat {
+    if (not hasAdminPermission(caller)) {
+      Runtime.trap("Unauthorized: Only admins can cleanup sessions");
+    };
+
+    let now = Time.now();
+    var removedCount = 0;
+
+    for ((token, session) in sessions.entries()) {
+      if (now >= session.expiresAt) {
+        sessions.remove(token);
+        removedCount += 1;
+      };
+    };
+
+    removedCount;
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -148,13 +253,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
-  };
-
-  func validateSession(sessionToken : Text, caller : Principal) : Bool {
-    switch (sessions.get(sessionToken)) {
-      case (null) { false };
-      case (?session) { session.principal == caller };
-    };
   };
 
   public query func getProductById(id : Nat) : async Product {
@@ -213,20 +311,14 @@ actor {
     filterProductsByDiscount(activeProducts, minDiscount, maxDiscount);
   };
 
-  public query func getFashionProducts() : async [Product] {
+  public query func getFashionProducts(category : FashionCategory) : async [Product] {
     products.values().toArray().filter(
       func(product) {
         product.status == #active and (
-          product.category == #bottomWear or
-          product.category == #chunnisDupattas or
-          product.category == #dressMaterial or
-          product.category == #gowns or
-          product.category == #kurtasKurtis or
-          product.category == #lehengaCholis or
-          product.category == #salwarSuits or
-          product.category == #sarees or
-          product.category == #westernWear or
-          product.category == #sportswear
+          switch (product.category) {
+            case (#fashion(cat)) { cat == category };
+            case (#jewellery(_)) { false };
+          }
         );
       }
     );
@@ -302,7 +394,7 @@ actor {
   };
 
   public shared ({ caller }) func addProduct(input : ProductInput) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not hasAdminPermission(caller)) {
       Runtime.trap("Unauthorized: Only admins can add products");
     };
 
@@ -330,7 +422,7 @@ actor {
   };
 
   public shared ({ caller }) func updateProduct(id : Nat, input : ProductInput) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not hasAdminPermission(caller)) {
       Runtime.trap("Unauthorized: Only admins can update products");
     };
 
@@ -358,7 +450,7 @@ actor {
   };
 
   public shared ({ caller }) func deleteProduct(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not hasAdminPermission(caller)) {
       Runtime.trap("Unauthorized: Only admins can delete products");
     };
 
@@ -386,7 +478,7 @@ actor {
   };
 
   public shared ({ caller }) func restoreProducts(productsToRestore : [Product]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not hasAdminPermission(caller)) {
       Runtime.trap("Unauthorized: Only admins can restore products");
     };
 

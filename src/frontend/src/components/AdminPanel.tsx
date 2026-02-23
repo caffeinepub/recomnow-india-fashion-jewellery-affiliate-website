@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { X, Package, FileText, Users, LogOut, FileEdit } from 'lucide-react';
-import { useIsCallerAdmin } from '../hooks/useQueries';
+import { X, Package, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useLogout } from '../hooks/useBackendAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import ProductManagement from './admin/ProductManagement';
 import BlogManagement from './admin/BlogManagement';
@@ -13,69 +14,54 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ onClose }: AdminPanelProps) {
-  const { data: isAdmin, isLoading } = useIsCallerAdmin();
-  const { logout } = useAuth();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'products' | 'blog' | 'newsletter' | 'pages'>('products');
+  const { isAuthenticated: customAuthActive, username, clearSession } = useAuth();
+  const { identity, clear: clearII } = useInternetIdentity();
+  const logoutMutation = useLogout();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
-    await logout();
-    queryClient.clear();
+    if (customAuthActive) {
+      // Custom auth logout
+      await logoutMutation.mutateAsync();
+    } else if (identity) {
+      // Internet Identity logout
+      await clearII();
+      queryClient.clear();
+    }
     onClose();
   };
 
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <div className="text-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-          <div className="text-center space-y-4">
-            <div className="text-4xl">🔒</div>
-            <h2 className="text-2xl font-bold text-foreground">Access Denied</h2>
-            <p className="text-muted-foreground">You don't have permission to access the admin panel.</p>
-            <button
-              onClick={onClose}
-              className="px-6 py-2 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const tabs = [
-    { id: 'products' as const, name: 'Products', icon: Package },
-    { id: 'blog' as const, name: 'Blog Posts', icon: FileText },
-    { id: 'newsletter' as const, name: 'Newsletter', icon: Users },
-    { id: 'pages' as const, name: 'Site Pages', icon: FileEdit },
+    { id: 'products' as const, label: 'Products', icon: Package },
+    { id: 'blog' as const, label: 'Blog', icon: Package },
+    { id: 'newsletter' as const, label: 'Newsletter', icon: Package },
+    { id: 'pages' as const, label: 'Site Pages', icon: Package },
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-2xl font-bold text-foreground">Admin Panel</h2>
+        <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-rainbow">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+            {username && (
+              <p className="text-sm text-white/80 mt-1">Logged in as: {username}</p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
+              disabled={logoutMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50"
             >
               <LogOut className="h-4 w-4" />
               Logout
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
+              className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
             >
               <X className="h-6 w-6" />
             </button>
@@ -83,21 +69,21 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 p-4 border-b border-border overflow-x-auto">
+        <div className="flex border-b border-border bg-muted/30">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-gradient-rainbow text-white'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'text-foreground border-b-2 border-primary-magenta bg-background'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {tab.name}
+                <Icon className="h-5 w-5" />
+                {tab.label}
               </button>
             );
           })}

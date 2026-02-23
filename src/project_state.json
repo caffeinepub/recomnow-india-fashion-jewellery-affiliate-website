@@ -1,45 +1,77 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce project with product display and filtering functionality",
+  "summary": "Web application with secure username/password authentication system",
   "architectural_notes": [
-    "Product filtering interface needed",
-    "Product data should match Version 89 catalog"
+    "Username/password authentication system replacing Internet Identity",
+    "Password hashing required for security (no plain text storage)",
+    "Session management for authenticated users"
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "existing_features": [],
+  "existing_features": [
+    {
+      "id": "feature-replace-hardcoded-admin-credentials-in-frontend-src-hooks-useauth-ts-with-a-secure-registration-system-that-allows-creating-new-admin-accounts",
+      "title": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-secure-session-management-with-token-based-authentication-that-expires-after-a-reasonable-period",
+      "title": "Implement secure session management with token-based authentication that expires after a reasonable period",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-adminlogin-component-in-frontend-src-components-adminlogin-tsx-to-include-registration-ui-and-connect-to-the-new-backend-authentication-system",
+      "title": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add Filter button matching Version 89 design",
+      "summary": "Implement secure user registration system with custom account creation",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Restore product catalog from Version 89",
+      "summary": "Add password hashing (no plain text storage)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Add a Filter button to the ProductGrid component that matches the design and functionality from Version 89",
-      "reqIds": [
-        "REQ-1"
-      ],
+      "summary": "Implement secure session management",
+      "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-4",
-      "summary": "Restore the product catalog data from Version 89, including all products that were present in that version",
+      "id": "AR-5",
+      "summary": "Implement password hashing in the backend using SHA-256 or Motoko's native crypto functions to never store passwords in plain text",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Create backend user management functions in backend/main.mo for registering users, authenticating with hashed passwords, and managing user accounts",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Add Filter button from Version 89 and restore Version 89 product catalog",
+  "projectName": "Fashion Store Admin",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

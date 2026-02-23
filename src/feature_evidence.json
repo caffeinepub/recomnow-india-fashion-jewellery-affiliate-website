@@ -1,4 +1,71 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-replace-hardcoded-admin-credentials-in-frontend-src-hooks-useauth-ts-with-a-secure-registration-system-that-allows-creating-new-admin-accounts",
+      "featureTitle": "Replace hardcoded admin credentials in frontend/src/hooks/useAuth.ts with a secure registration system that allows creating new admin accounts",
+      "files": [
+        "frontend/src/hooks/useAuth.ts",
+        "frontend/src/hooks/useBackendAuth.ts"
+      ],
+      "components": [
+        "authorization@3.0.0",
+        "http-outcalls@3.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-secure-session-management-with-token-based-authentication-that-expires-after-a-reasonable-period",
+      "featureTitle": "Implement secure session management with token-based authentication that expires after a reasonable period",
+      "files": [
+        "frontend/src/hooks/useAuth.ts"
+      ],
+      "components": [
+        "authorization@3.0.0",
+        "http-outcalls@3.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-adminlogin-component-in-frontend-src-components-adminlogin-tsx-to-include-registration-ui-and-connect-to-the-new-backend-authentication-system",
+      "featureTitle": "Update AdminLogin component in frontend/src/components/AdminLogin.tsx to include registration UI and connect to the new backend authentication system",
+      "files": [
+        "frontend/src/components/AdminLogin.tsx",
+        "frontend/src/components/PasswordStrengthIndicator.tsx",
+        "frontend/src/utils/passwordValidation.ts"
+      ],
+      "components": [
+        "authorization@3.0.0",
+        "http-outcalls@3.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
 }
