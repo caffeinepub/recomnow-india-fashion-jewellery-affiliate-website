@@ -255,15 +255,15 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-blue-600"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    {mode === 'login' ? 'Logging in...' : 'Creating account...'}
+                    <span className="text-blue-600">{mode === 'login' ? 'Logging in...' : 'Creating account...'}</span>
                   </>
                 ) : (
-                  mode === 'login' ? 'Login' : 'Create Account'
+                  <span className="text-blue-600">{mode === 'login' ? 'Log In' : 'Register'}</span>
                 )}
               </button>
               
@@ -276,11 +276,11 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                   setConfirmPassword('');
                 }}
                 disabled={isLoading}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                className="text-sm text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50 font-medium"
               >
                 {mode === 'login' 
                   ? "Don't have an account? Register" 
-                  : 'Already have an account? Login'
+                  : 'Already have an account? Log In'
                 }
               </button>
 
@@ -288,7 +288,7 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-full border border-border hover:bg-muted transition-colors disabled:opacity-50 text-blue-600 font-medium"
               >
                 Cancel
               </button>
@@ -315,22 +315,22 @@ export default function AdminLogin({ onClose, onSuccess }: AdminLoginProps) {
               <button
                 onClick={handleInternetIdentityLogin}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-rainbow font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-blue-600"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Connecting...
+                    <span className="text-blue-600">Connecting...</span>
                   </>
                 ) : (
-                  'Login with Internet Identity'
+                  <span className="text-blue-600">Login with Internet Identity</span>
                 )}
               </button>
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-full border border-border hover:bg-muted transition-colors disabled:opacity-50 text-blue-600 font-medium"
               >
                 Cancel
               </button>

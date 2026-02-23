@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the admin authorization check that is preventing authenticated admin users from adding products to the system.
+**Goal:** Improve visibility of Admin Panel buttons by changing their font colors to blue.
 
 **Planned changes:**
-- Debug and fix the isAdmin authorization check in backend main.mo addProduct function to correctly validate admin permissions using session tokens
-- Add console logging in frontend ProductManagement component to capture and display the session token being sent with addProduct requests
-- Add debug logging in backend main.mo to trace the complete authorization flow (caller principal, session lookup, role verification, failure points)
-- Verify that the session token is correctly passed from useBackendAuth hook through useQueries addProduct mutation to the backend actor call
+- Change font color of all primary action buttons in Admin Panel components (AdminLogin, AdminPanel, ProductManagement) to blue
+- Ensure consistent blue color across all admin buttons including 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and other action buttons
+- Maintain accessibility with sufficient color contrast
 
-**User-visible outcome:** Admin users can successfully add new products without encountering "Unauthorized: Only admins can add products" errors. The authorization check correctly validates their admin permissions.
+**User-visible outcome:** Admin panel buttons will have blue text that is easier to locate and identify, improving the overall usability of the admin interface.

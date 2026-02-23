@@ -1,81 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Fix admin authorization check for product creation",
+  "title": "Change Admin Panel button font colors to blue for better visibility",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Debug and fix the isAdmin authorization check in the backend main.mo addProduct function to correctly validate admin permissions using the caller's session token",
-      "target": "backend",
+      "text": "Change the font color of all primary action buttons in the Admin Panel to blue, including: 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and any other action buttons in AdminLogin.tsx, AdminPanel.tsx, and ProductManagement.tsx components",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "issue not resolved. it is still showing \"Unauthorized: Only admins can add products\"."
+          "Change the Font colors into blue at the Admin Panel. (i.e.- Log in, Log out, Add Product etc.) It is hard to find the button"
         ]
       },
       "acceptanceCriteria": [
-        "The addProduct function successfully accepts product additions from authenticated admin users",
-        "The authorization check correctly validates the session token against stored admin sessions",
-        "No 'Unauthorized: Only admins can add products' error appears for valid admin users"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Add console logging in the frontend ProductManagement component to capture and display the exact session token being sent with addProduct requests",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Session token value is logged to browser console before making addProduct API call",
-        "Log output includes timestamp and token format for debugging"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Add debug logging in backend main.mo to trace the complete authorization flow: log the incoming caller principal, session token lookup, role verification, and the exact point where authorization fails",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend logs show the caller principal for each addProduct request",
-        "Backend logs indicate whether the session token was found in storage",
-        "Backend logs show the user's role retrieved from the session",
-        "Backend logs clearly identify which authorization check is failing"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Verify that the session token is being correctly passed from the useBackendAuth hook through the useQueries addProduct mutation to the backend actor call",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Session token from useAuth store is correctly included in the addProduct mutation payload",
-        "No token transformation or corruption occurs during the frontend-to-backend call chain"
+        "All primary action buttons in AdminLogin component have blue text color",
+        "All primary action buttons in AdminPanel component have blue text color",
+        "All primary action buttons in ProductManagement component have blue text color",
+        "Button text remains legible with sufficient contrast against backgrounds",
+        "Blue color is consistent across all admin panel buttons"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the existing user authentication flow or session storage mechanism",
-    "Maintain backward compatibility with existing admin sessions",
-    "Keep the single-actor backend architecture"
+    "Do not modify the authentication logic or backend functionality",
+    "Maintain accessibility standards with sufficient color contrast",
+    "Keep existing button styling and layouts intact, only change text color"
   ],
   "nonGoals": [
-    "Redesigning the entire authorization system",
-    "Adding new authentication methods",
-    "Changing the session token format",
-    "Modifying other CRUD operations (update, delete) unless they have the same issue"
+    "Resolving the authorization issue for adding products (separate concern)",
+    "Changing button colors in non-admin sections",
+    "Redesigning the entire admin panel layout"
   ],
   "imageRequirements": {
     "required": [],

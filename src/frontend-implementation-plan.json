@@ -1,45 +1,33 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix admin authorization check for product creation - Frontend debugging",
+  "title": "Change Admin Panel button font colors to blue for better visibility",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Add console logging in ProductManagement component to capture session token being sent with addProduct requests",
+      "id": "REQ-1",
+      "summary": "Change the font color of all primary action buttons in the Admin Panel to blue for better visibility",
       "acceptanceCriteria": [
-        "Session token value is logged to browser console before making addProduct API call",
-        "Log output includes timestamp and token format for debugging"
+        "All primary action buttons in AdminLogin component have blue text color",
+        "All primary action buttons in AdminPanel component have blue text color",
+        "All primary action buttons in ProductManagement component have blue text color",
+        "Button text remains legible with sufficient contrast against backgrounds",
+        "Blue color is consistent across all admin panel buttons"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/admin/ProductManagement.tsx",
+          "path": "frontend/src/components/AdminLogin.tsx",
           "operation": "modify",
-          "description": "Add console logging before the addProduct mutation call to log the session token value with timestamp. Include logging for: (1) the raw session token from useAuth store, (2) timestamp in ISO format, (3) token length and format validation. Wrap the addProduct mutation invocation to capture the exact payload being sent to the backend."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Verify session token flow from useAuth through useQueries addProduct mutation to backend actor call",
-      "acceptanceCriteria": [
-        "Session token from useAuth store is correctly included in the addProduct mutation payload",
-        "No token transformation or corruption occurs during the frontend-to-backend call chain"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useAuth.ts",
-          "operation": "modify",
-          "description": "Add console logging in the useAuth store to track session token state changes. Log when sessionToken is set, retrieved, or cleared. Include validation checks to ensure the token maintains its format throughout the store lifecycle."
+          "description": "Update all primary action buttons ('Log In', 'Register', Internet Identity login/register buttons) to use blue text color. Apply text-blue-600 class or equivalent to button text while maintaining existing button structure and accessibility. Ensure sufficient contrast against button backgrounds for WCAG AA compliance."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/AdminPanel.tsx",
           "operation": "modify",
-          "description": "Add detailed logging in the addProduct mutation to trace the session token through the mutation pipeline. Log: (1) session token received from useAuth at mutation invocation, (2) token before actor call, (3) any transformations applied to the token. Verify the token is correctly passed to the backend actor's addProduct method without modification."
+          "description": "Update the 'Log Out' button text color to blue. Apply text-blue-600 class or equivalent while maintaining existing button styling and layout. Ensure the blue text color is clearly visible against the button background."
         },
         {
           "path": "frontend/src/components/admin/ProductManagement.tsx",
           "operation": "modify",
-          "description": "Add comprehensive logging at the point where addProduct mutation is called to verify the complete data flow. Log the session token state immediately before mutation execution and verify it matches the expected format from useAuth store."
+          "description": "Update all primary action buttons ('Add Product', 'Edit', 'Delete', 'Save', 'Cancel') to use blue text color. Apply text-blue-600 class or equivalent to all action button text while preserving existing button functionality, dialogs, and layouts. Ensure consistent blue text color across all product management actions."
         }
       ]
     }

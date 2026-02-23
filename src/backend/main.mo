@@ -142,6 +142,25 @@ actor {
     hasPermission;
   };
 
+  func getPrincipalFromSession(sessionToken : Text) : ?Principal {
+    switch (sessions.get(sessionToken)) {
+      case (null) { 
+        Debug.print("Session not found for token: " # sessionToken);
+        null 
+      };
+      case (?session) {
+        let now = Time.now();
+        if (now < session.expiresAt) {
+          Debug.print("Session found for token, principal: " # session.principal.toText() # ", username: " # session.username);
+          ?session.principal;
+        } else {
+          Debug.print("Session expired for token: " # sessionToken);
+          null;
+        };
+      };
+    };
+  };
+
   public shared ({ caller }) func addUser(username : Text, password : Text) : async () {
     Debug.print("addUser called for username: " # username # " by principal: " # caller.toText());
     
@@ -468,22 +487,26 @@ actor {
   };
 
   public shared ({ caller }) func addProduct(input : ProductInput) : async Nat {
-    Debug.print("addProduct called by principal: " # caller.toText());
-    Debug.print("Checking admin permission...");
-    
-    let isAdmin = hasAdminPermission(caller);
-    let userRole = AccessControl.getUserRole(accessControlState, caller);
-    
-    Debug.print("User role: " # debug_show(userRole));
-    Debug.print("Is admin: " # debug_show(isAdmin));
+    Debug.print("=== addProduct Authorization Check ===");
+    Debug.print("Called by principal: " # caller.toText());
     Debug.print("Access control initialized: " # debug_show(accessControlInitialized));
     
-    if (not isAdmin) {
-      Debug.print("Authorization failed: User is not admin");
+    let userRole = AccessControl.getUserRole(accessControlState, caller);
+    Debug.print("User role from AccessControl: " # debug_show(userRole));
+    
+    let isAdminCheck = AccessControl.isAdmin(accessControlState, caller);
+    Debug.print("isAdmin check result: " # debug_show(isAdminCheck));
+    
+    let hasPermissionCheck = AccessControl.hasPermission(accessControlState, caller, #admin);
+    Debug.print("hasPermission(#admin) check result: " # debug_show(hasPermissionCheck));
+    
+    if (not hasPermissionCheck) {
+      Debug.print("Authorization FAILED: User does not have admin permission");
       Runtime.trap("Unauthorized: Only admins can add products");
     };
 
-    Debug.print("Authorization successful, adding product: " # input.title);
+    Debug.print("Authorization SUCCESSFUL: Proceeding to add product");
+    Debug.print("Product title: " # input.title);
 
     let id = productCounter;
     productCounter += 1;
@@ -506,13 +529,14 @@ actor {
 
     products.add(id, product);
     Debug.print("Product added successfully with id: " # id.toText());
+    Debug.print("=== End addProduct ===");
     id;
   };
 
   public shared ({ caller }) func updateProduct(id : Nat, input : ProductInput) : async () {
     Debug.print("updateProduct called by principal: " # caller.toText() # " for product id: " # id.toText());
     
-    if (not hasAdminPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can update products");
     };
@@ -544,7 +568,7 @@ actor {
   public shared ({ caller }) func deleteProduct(id : Nat) : async () {
     Debug.print("deleteProduct called by principal: " # caller.toText() # " for product id: " # id.toText());
     
-    if (not hasAdminPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can delete products");
     };
@@ -576,7 +600,7 @@ actor {
   public shared ({ caller }) func restoreProducts(productsToRestore : [Product]) : async () {
     Debug.print("restoreProducts called by principal: " # caller.toText());
     
-    if (not hasAdminPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Debug.print("Authorization failed: User is not admin");
       Runtime.trap("Unauthorized: Only admins can restore products");
     };

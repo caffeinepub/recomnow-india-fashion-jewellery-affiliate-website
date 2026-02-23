@@ -4,23 +4,15 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Authorization issue: Users receive 'Unauthorized: Only admins can add products' error when attempting to add products, even after attempted fix in Version 110"
+    "Authorization issue when adding products not yet resolved"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-console-logging-in-the-frontend-productmanagement-component-to-capture-and-display-the-exact-session-token-being-sent-with-addproduct-requests",
-      "title": "Add console logging in the frontend ProductManagement component to capture and display the exact session token being sent with addProduct requests",
+      "id": "feature-change-the-font-color-of-all-primary-action-buttons-in-the-admin-panel-to-blue-including-log-in-log-out-add-product-edit-delete-and-any-other-action-buttons-in-adminlogin-tsx-adminpanel-tsx-and-productmanagement-tsx-components",
+      "title": "Change the font color of all primary action buttons in the Admin Panel to blue, including: 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and any other action buttons in AdminLogin.tsx, AdminPanel.tsx, and ProductManagement.tsx components",
       "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-verify-that-the-session-token-is-being-correctly-passed-from-the-usebackendauth-hook-through-the-usequeries-addproduct-mutation-to-the-backend-actor-call",
-      "title": "Verify that the session token is being correctly passed from the useBackendAuth hook through the useQueries addProduct mutation to the backend actor call",
-      "reqIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "version": 1
     }
@@ -28,22 +20,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Debug and fix the isAdmin authorization check in the backend main.mo addProduct function to correctly validate admin permissions using the caller's session token",
-      "reqIds": [
-        "REQ-1"
-      ],
+      "summary": "Fix authorization issue for adding products",
+      "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-3",
-      "summary": "Add debug logging in backend main.mo to trace the complete authorization flow: log the incoming caller principal, session token lookup, role verification, and the exact point where authorization fails",
-      "reqIds": [
-        "REQ-3"
-      ],
+      "id": "AR-2",
+      "summary": "Change font colors to blue in Admin Panel (Log in, Log out, Add Product buttons)",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix admin authorization check for product creation",
+  "projectName": "Change Admin Panel button font colors to blue for better visibility",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

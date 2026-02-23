@@ -54,10 +54,10 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             <button
               onClick={handleLogout}
               disabled={logoutMutation.isPending}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
             >
-              <LogOut className="h-4 w-4" />
-              Logout
+              <LogOut className="h-4 w-4 text-blue-600" />
+              <span className="text-blue-600 font-medium">Log Out</span>
             </button>
             <button
               onClick={onClose}
