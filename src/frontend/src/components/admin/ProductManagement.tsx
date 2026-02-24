@@ -5,6 +5,7 @@ import { Trash2, Loader2, Package, Plus, Pencil, ExternalLink } from 'lucide-rea
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../../hooks/useAuth';
+import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +54,11 @@ export default function ProductManagement() {
   const deleteProductMutation = useDeleteProduct();
   const addProductMutation = useAddProduct();
   const updateProductMutation = useUpdateProduct();
-  const { sessionToken, isAuthenticated } = useAuth();
+  const { sessionToken, isAuthenticated: customAuthAuthenticated, username } = useAuth();
+  const { identity } = useInternetIdentity();
+
+  // User is authenticated if they have either custom auth session OR Internet Identity
+  const isAuthenticated = customAuthAuthenticated || !!identity;
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -112,12 +117,36 @@ export default function ProductManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('=== Product Form Submit ===');
-    console.log('Session token:', sessionToken);
-    console.log('Is authenticated:', isAuthenticated);
-    console.log('Product data:', { title, price, mrp, discountPercentage });
+    console.group('📝 PRODUCT FORM SUBMIT');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Form Mode:', editingProduct ? 'EDIT' : 'ADD');
+    console.log('Authentication State:', {
+      isAuthenticated,
+      customAuthAuthenticated,
+      hasSessionToken: !!sessionToken,
+      hasInternetIdentity: !!identity,
+      identityPrincipal: identity?.getPrincipal().toString(),
+      username,
+    });
+    console.log('Form Data:', {
+      title,
+      price,
+      mrp,
+      discountPercentage,
+      categoryType,
+      isFeatured,
+    });
+
+    if (!isAuthenticated) {
+      console.error('❌ User not authenticated');
+      console.groupEnd();
+      toast.error('Please log in to add products');
+      return;
+    }
 
     if (!title.trim() || !imageUrl.trim() || !affiliateLink.trim()) {
+      console.error('❌ Validation failed: Missing required fields');
+      console.groupEnd();
       toast.error('Please fill in all required fields');
       return;
     }
@@ -127,6 +156,8 @@ export default function ProductManagement() {
     const discountNum = parseInt(discountPercentage);
 
     if (isNaN(priceNum) || isNaN(mrpNum) || isNaN(discountNum)) {
+      console.error('❌ Validation failed: Invalid numbers');
+      console.groupEnd();
       toast.error('Please enter valid numbers for price, MRP, and discount');
       return;
     }
@@ -147,8 +178,12 @@ export default function ProductManagement() {
       isFeatured,
     };
 
+    console.log('✅ Validation passed');
+    console.log('Product Input Object:', productInput);
+
     try {
       if (editingProduct) {
+        console.log('Calling UPDATE mutation...');
         await updateProductMutation.mutateAsync({
           id: editingProduct.id,
           ...productInput,
@@ -156,29 +191,58 @@ export default function ProductManagement() {
         toast.success('Product updated successfully');
         setShowEditDialog(false);
       } else {
-        console.log('Calling addProduct mutation with:', productInput);
+        console.log('Calling ADD mutation...');
         await addProductMutation.mutateAsync(productInput);
         toast.success('Product added successfully');
         setShowAddDialog(false);
       }
+      console.log('✅ Operation completed successfully');
       resetForm();
       setEditingProduct(null);
     } catch (error: any) {
-      console.error('Product operation error:', error);
-      toast.error(error.message || 'Failed to save product');
+      console.group('❌ PRODUCT OPERATION ERROR (Component Level)');
+      console.error('Error caught in component:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      
+      // Extract detailed error information
+      let errorMessage = 'Failed to save product';
+
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      console.log('Extracted error message:', errorMessage);
+      toast.error(errorMessage);
+
+      console.groupEnd();
+      console.groupEnd();
     }
   };
 
   const handleDelete = async () => {
     if (deleteProductId === null) return;
 
+    console.group('🗑️ DELETE PRODUCT (Component)');
+    console.log('Product ID:', deleteProductId.toString());
+
     try {
       await deleteProductMutation.mutateAsync(deleteProductId);
       toast.success('Product deleted successfully');
       setDeleteProductId(null);
+      console.log('✅ Delete successful');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete product');
+      console.error('❌ Delete failed:', error);
+      
+      let errorMessage = 'Failed to delete product';
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     }
+    console.groupEnd();
   };
 
   if (isLoading) {
@@ -203,12 +267,19 @@ export default function ProductManagement() {
             resetForm();
             setShowAddDialog(true);
           }}
-          className="flex items-center gap-2 bg-gradient-rainbow hover:opacity-90"
+          disabled={!isAuthenticated}
+          className="flex items-center gap-2 bg-gradient-rainbow hover:opacity-90 disabled:opacity-50"
         >
           <Plus className="h-5 w-5 text-blue-600" />
           <span className="text-blue-600 font-medium">Add Product</span>
         </Button>
       </div>
+
+      {!isAuthenticated && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+          Please log in to add or manage products.
+        </div>
+      )}
 
       {products.length === 0 ? (
         <div className="text-center py-12 bg-muted/30 rounded-lg border border-border">
@@ -222,7 +293,8 @@ export default function ProductManagement() {
               resetForm();
               setShowAddDialog(true);
             }}
-            className="bg-gradient-rainbow hover:opacity-90"
+            disabled={!isAuthenticated}
+            className="bg-gradient-rainbow hover:opacity-90 disabled:opacity-50"
           >
             <Plus className="h-5 w-5 mr-2 text-blue-600" />
             <span className="text-blue-600 font-medium">Add Your First Product</span>
@@ -265,13 +337,15 @@ export default function ProductManagement() {
                   onClick={() => loadProductForEdit(product)}
                   className="p-2 rounded-lg hover:bg-muted transition-colors text-blue-600"
                   title="Edit product"
+                  disabled={!isAuthenticated}
                 >
                   <Pencil className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setDeleteProductId(product.id)}
-                  className="p-2 rounded-lg hover:bg-destructive/10 transition-colors text-destructive"
+                  className="p-2 rounded-lg hover:bg-destructive/10 transition-colors text-destructive disabled:opacity-50"
                   title="Delete product"
+                  disabled={!isAuthenticated}
                 >
                   <Trash2 className="h-5 w-5" />
                 </button>
@@ -454,21 +528,7 @@ export default function ProductManagement() {
               </label>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={addProductMutation.isPending}
-                className="flex-1 bg-gradient-rainbow hover:opacity-90"
-              >
-                {addProductMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin text-blue-600" />
-                    <span className="text-blue-600">Adding...</span>
-                  </>
-                ) : (
-                  <span className="text-blue-600 font-medium">Add Product</span>
-                )}
-              </Button>
+            <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -476,9 +536,22 @@ export default function ProductManagement() {
                   setShowAddDialog(false);
                   resetForm();
                 }}
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
               >
                 Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={addProductMutation.isPending}
+                className="bg-gradient-rainbow hover:opacity-90"
+              >
+                {addProductMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin text-blue-600" />
+                    <span className="text-blue-600">Adding...</span>
+                  </>
+                ) : (
+                  <span className="text-blue-600 font-medium">Add Product</span>
+                )}
               </Button>
             </div>
           </form>
@@ -658,21 +731,7 @@ export default function ProductManagement() {
               </label>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={updateProductMutation.isPending}
-                className="flex-1 bg-gradient-rainbow hover:opacity-90"
-              >
-                {updateProductMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin text-blue-600" />
-                    <span className="text-blue-600">Saving...</span>
-                  </>
-                ) : (
-                  <span className="text-blue-600 font-medium">Save Changes</span>
-                )}
-              </Button>
+            <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -681,9 +740,22 @@ export default function ProductManagement() {
                   resetForm();
                   setEditingProduct(null);
                 }}
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
               >
                 Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateProductMutation.isPending}
+                className="bg-gradient-rainbow hover:opacity-90"
+              >
+                {updateProductMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin text-blue-600" />
+                    <span className="text-blue-600">Updating...</span>
+                  </>
+                ) : (
+                  <span className="text-blue-600 font-medium">Update Product</span>
+                )}
               </Button>
             </div>
           </form>
@@ -694,19 +766,16 @@ export default function ProductManagement() {
       <AlertDialog open={deleteProductId !== null} onOpenChange={() => setDeleteProductId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-blue-600">Delete Product</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this product? This action cannot be undone.
+              This will mark the product as inactive. You can restore it later if needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="text-blue-600 border-blue-600 hover:bg-blue-50">
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteProductMutation.isPending}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteProductMutation.isPending ? (
                 <>

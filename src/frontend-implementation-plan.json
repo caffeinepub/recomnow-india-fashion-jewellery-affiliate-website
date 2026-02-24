@@ -1,33 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Change Admin Panel button font colors to blue for better visibility",
+  "title": "Remove admin restriction on product uploads",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Change the font color of all primary action buttons in the Admin Panel to blue for better visibility",
+      "id": "REQ-2",
+      "summary": "Remove client-side admin checks from ProductManagement to allow any authenticated user to upload products",
       "acceptanceCriteria": [
-        "All primary action buttons in AdminLogin component have blue text color",
-        "All primary action buttons in AdminPanel component have blue text color",
-        "All primary action buttons in ProductManagement component have blue text color",
-        "Button text remains legible with sufficient contrast against backgrounds",
-        "Blue color is consistent across all admin panel buttons"
+        "Authenticated users can access the product upload form",
+        "Product upload dialog opens successfully for any authenticated user",
+        "No client-side validation blocks authenticated users from submitting products"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminLogin.tsx",
-          "operation": "modify",
-          "description": "Update all primary action buttons ('Log In', 'Register', Internet Identity login/register buttons) to use blue text color. Apply text-blue-600 class or equivalent to button text while maintaining existing button structure and accessibility. Ensure sufficient contrast against button backgrounds for WCAG AA compliance."
-        },
-        {
-          "path": "frontend/src/components/AdminPanel.tsx",
-          "operation": "modify",
-          "description": "Update the 'Log Out' button text color to blue. Apply text-blue-600 class or equivalent while maintaining existing button styling and layout. Ensure the blue text color is clearly visible against the button background."
-        },
-        {
           "path": "frontend/src/components/admin/ProductManagement.tsx",
           "operation": "modify",
-          "description": "Update all primary action buttons ('Add Product', 'Edit', 'Delete', 'Save', 'Cancel') to use blue text color. Apply text-blue-600 class or equivalent to all action button text while preserving existing button functionality, dialogs, and layouts. Ensure consistent blue text color across all product management actions."
+          "description": "Remove or relax any client-side admin-only checks that prevent authenticated non-admin users from accessing the product upload form and submitting products. Ensure the component checks for authentication (either custom session token or Internet Identity) but does not require admin role. Update error messages to reflect the new 'authenticated user' requirement instead of 'admin-only'. The backend authorization logic (REQ-1) will handle the actual permission enforcement."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Review and update the addProduct mutation to ensure it does not include client-side admin role checks. The mutation should allow any authenticated user to call the backend addProduct method. Remove any admin permission validations from the mutation's onMutate or other lifecycle hooks. The backend will enforce the authentication requirement as specified in REQ-1."
         }
       ]
     }

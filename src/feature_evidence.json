@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-change-the-font-color-of-all-primary-action-buttons-in-the-admin-panel-to-blue-including-log-in-log-out-add-product-edit-delete-and-any-other-action-buttons-in-adminlogin-tsx-adminpanel-tsx-and-productmanagement-tsx-components",
-      "featureTitle": "Change the font color of all primary action buttons in the Admin Panel to blue, including: 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and any other action buttons in AdminLogin.tsx, AdminPanel.tsx, and ProductManagement.tsx components",
+      "featureId": "feature-update-the-frontend-productmanagement-component-to-remove-or-adjust-any-client-side-admin-checks-that-might-be-preventing-product-uploads-for-authenticated-non-admin-users",
+      "featureTitle": "Update the frontend ProductManagement component to remove or adjust any client-side admin checks that might be preventing product uploads for authenticated non-admin users",
       "files": [
-        "frontend/src/components/AdminLogin.tsx",
-        "frontend/src/components/AdminPanel.tsx",
-        "frontend/src/components/admin/ProductManagement.tsx"
+        "frontend/src/components/admin/ProductManagement.tsx",
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "authorization@3.0.0",
@@ -20,7 +19,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "confidence": "high"
     }

@@ -1,6 +1,6 @@
 {
   "frontend/src/App.tsx": "Main application component with client-side routing using native browser history API, lazy-loaded page components (Products, Admin, Sitemap), route detection via pathname, and blog post modal state management.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for product operations and user profile management with detailed logging in addProduct, updateProduct, and deleteProduct mutations to trace session token flow and actor calls with timestamps.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for product operations and user profile management with comprehensive error logging and no client-side admin permission checks for adding products.",
   "frontend/src/components/Header.tsx": "Responsive header with logo, navigation links (Home, Products), and Admin Panel button visible to all users with gold gradient and crown icon, without authentication check.",
   "frontend/src/components/Hero.tsx": "Hero section with dark navy gradient background, magenta-colored heading using inline style (#FF00FF), white text with drop shadows, prominent CTAs including pink \"Shop Now\" button text, and trust badges displayed using the TrustBadges component.",
   "frontend/src/components/ProductGrid.tsx": "Product showcase with hierarchical category filtering (Fashion with 8 subcategories and Jewellery with 2 subcategories), collapsible category sections, light green \"Shop Now on Amazon\" buttons with pink text, and price range slider filtering.",
@@ -8,7 +8,7 @@
   "frontend/src/components/Footer.tsx": "Footer component with newsletter form that shows an info message when submitted, since newsletter backend functionality has been removed.",
   "frontend/src/components/ProfileSetupModal.tsx": "Modal dialog that appears for authenticated users without a profile, prompting them to enter their name with a welcoming design and rainbow gradient accents.",
   "frontend/src/components/AdminPanel.tsx": "Protected admin panel with tabbed interface and blue text color applied to the Log Out button for better visibility.",
-  "frontend/src/components/admin/ProductManagement.tsx": "Admin product management interface with blue text color applied to all action buttons and fixed TypeScript error by spreading productInput directly with id instead of nesting under input property for the update mutation.",
+  "frontend/src/components/admin/ProductManagement.tsx": "Product management interface that allows any authenticated user (via Internet Identity or custom auth) to add, edit, and delete products, with comprehensive error handling and form validation.",
   "frontend/src/components/admin/BlogManagement.tsx": "Admin component that displays a message indicating blog management is unavailable in this version.",
   "frontend/src/components/admin/NewsletterManagement.tsx": "Admin component that displays a message indicating newsletter management is unavailable in this version.",
   "frontend/src/index.css": "Global styles with WCAG AA+ compliant gold and navy OKLCH color system, bold typography, optimized font rendering, and custom pink styling for the price range slider component.",

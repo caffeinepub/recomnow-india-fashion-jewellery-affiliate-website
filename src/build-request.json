@@ -1,38 +1,51 @@
 {
   "kind": "build_request",
-  "title": "Change Admin Panel button font colors to blue for better visibility",
+  "title": "Remove admin restriction on product uploads",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Change the font color of all primary action buttons in the Admin Panel to blue, including: 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and any other action buttons in AdminLogin.tsx, AdminPanel.tsx, and ProductManagement.tsx components",
-      "target": "frontend",
+      "text": "Modify the backend authorization logic to allow any authenticated user (either via custom auth session or Internet Identity) to add products, removing the admin-only restriction",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-last"
         ],
         "quotes": [
-          "Change the Font colors into blue at the Admin Panel. (i.e.- Log in, Log out, Add Product etc.) It is hard to find the button"
+          "relax the guard to something like \"any authenticated user can add products\""
         ]
       },
       "acceptanceCriteria": [
-        "All primary action buttons in AdminLogin component have blue text color",
-        "All primary action buttons in AdminPanel component have blue text color",
-        "All primary action buttons in ProductManagement component have blue text color",
-        "Button text remains legible with sufficient contrast against backgrounds",
-        "Blue color is consistent across all admin panel buttons"
+        "Any user with a valid session token can successfully call addProduct",
+        "Any user authenticated via Internet Identity can successfully call addProduct",
+        "The 'Authorization Error: Unauthorized: Only admins can add products' error no longer appears for authenticated users",
+        "Unauthenticated users still cannot add products"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Update the frontend ProductManagement component to remove or adjust any client-side admin checks that might be preventing product uploads for authenticated non-admin users",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-last"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Authenticated users can access the product upload form",
+        "Product upload dialog opens successfully for any authenticated user",
+        "No client-side validation blocks authenticated users from submitting products"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the authentication logic or backend functionality",
-    "Maintain accessibility standards with sufficient color contrast",
-    "Keep existing button styling and layouts intact, only change text color"
+    "Maintain authentication requirement - unauthenticated users should still not be able to add products",
+    "Preserve existing product data structure and storage mechanisms"
   ],
   "nonGoals": [
-    "Resolving the authorization issue for adding products (separate concern)",
-    "Changing button colors in non-admin sections",
-    "Redesigning the entire admin panel layout"
+    "Changing the authentication system itself",
+    "Modifying product data schema or fields",
+    "Implementing granular role-based permissions beyond authenticated/unauthenticated"
   ],
   "imageRequirements": {
     "required": [],

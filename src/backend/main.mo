@@ -19,16 +19,8 @@ import MixinStorage "blob-storage/Mixin";
 actor {
   include MixinStorage();
 
-  public type ProductStatus = {
-    #active;
-    #inactive;
-  };
-
-  public type ProductCategory = {
-    #fashion : FashionCategory;
-    #jewellery : JewelleryCategory;
-  };
-
+  public type ProductStatus = { #active; #inactive };
+  public type ProductCategory = { #fashion : FashionCategory; #jewellery : JewelleryCategory };
   public type FashionCategory = {
     #sarees;
     #kurtaKurtis;
@@ -39,12 +31,7 @@ actor {
     #westernWear;
     #sportsWear;
   };
-
-  public type JewelleryCategory = {
-    #rings;
-    #necklaces;
-  };
-
+  public type JewelleryCategory = { #rings; #necklaces };
   public type Product = {
     id : Nat;
     title : Text;
@@ -60,7 +47,6 @@ actor {
     createdAt : Int;
     status : ProductStatus;
   };
-
   public type ProductInput = {
     title : Text;
     description : ?Text;
@@ -72,12 +58,10 @@ actor {
     discountPercentage : Nat;
     mrp : Nat;
   };
-
   public type UserProfile = {
     name : Text;
   };
-
-  type SessionInfo = {
+  public type SessionInfo = {
     principal : Principal;
     username : Text;
     createdAt : Int;
@@ -86,7 +70,7 @@ actor {
 
   module Product {
     public func compare(product1 : Product, product2 : Product) : Order.Order {
-      return product1.title.compare(product2.title);
+      product1.title.compare(product2.title);
     };
 
     public func comparePrice(product1 : Product, product2 : Product) : Order.Order {
@@ -107,7 +91,6 @@ actor {
 
   var accessControlInitialized : Bool = false;
   var adminPrincipal : ?Principal = null;
-
   let SESSION_DURATION : Int = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
 
   public shared ({ caller }) func initializeAccessControl() : async () {
@@ -130,10 +113,6 @@ actor {
 
   public query ({ caller }) func isCallerAdmin() : async Bool {
     AccessControl.isAdmin(accessControlState, caller);
-  };
-
-  public query ({ caller }) func _debugIsAdmin(callerPrincipal : Principal) : async Bool {
-    AccessControl.isAdmin(accessControlState, callerPrincipal);
   };
 
   func hasAdminPermission(caller : Principal) : Bool {
@@ -176,7 +155,6 @@ actor {
         users.add(username, password);
         userPrincipals.add(username, caller);
 
-        // Initialize access control if not done yet
         if (not accessControlInitialized) {
           AccessControl.initialize(accessControlState, caller);
           accessControlInitialized := true;
@@ -225,7 +203,6 @@ actor {
 
           sessions.add(sessionToken, session);
 
-          // If authenticating as "admin" username, grant admin role
           if (username == "admin") {
             if (not accessControlInitialized) {
               AccessControl.initialize(accessControlState, caller);
@@ -233,15 +210,12 @@ actor {
               adminPrincipal := ?caller;
               Debug.print("Access control initialized during admin login with principal: " # caller.toText());
             } else {
-              // Grant admin role to this principal if not already admin
               switch (adminPrincipal) {
                 case (?adminP) {
-                  // Use the existing admin to assign role
                   AccessControl.assignRole(accessControlState, adminP, caller, #admin);
                   Debug.print("Admin role assigned to principal: " # caller.toText());
                 };
                 case (null) {
-                  // Fallback: initialize with this caller
                   AccessControl.initialize(accessControlState, caller);
                   accessControlInitialized := true;
                   adminPrincipal := ?caller;
@@ -325,8 +299,18 @@ actor {
     false;
   };
 
+  func isAuthenticatedUser(caller : Principal) : Bool {
+    // Check if user has at least #user role via Internet Identity
+    let hasUserRole = AccessControl.hasPermission(accessControlState, caller, #user);
+    if (hasUserRole) {
+      return true;
+    };
+    
+    // Check if user is registered via custom auth
+    isRegisteredUser(caller);
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    // Allow registered users to get their profile, even if not explicitly assigned #user role
     if (not isRegisteredUser(caller) and not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only registered users can access profiles");
     };
@@ -341,7 +325,6 @@ actor {
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    // Allow registered users to save their profile, even if not explicitly assigned #user role
     if (not isRegisteredUser(caller) and not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only registered users can save profiles");
     };
@@ -490,23 +473,13 @@ actor {
     Debug.print("=== addProduct Authorization Check ===");
     Debug.print("Called by principal: " # caller.toText());
     Debug.print("Access control initialized: " # debug_show(accessControlInitialized));
-    
-    let userRole = AccessControl.getUserRole(accessControlState, caller);
-    Debug.print("User role from AccessControl: " # debug_show(userRole));
-    
-    let isAdminCheck = AccessControl.isAdmin(accessControlState, caller);
-    Debug.print("isAdmin check result: " # debug_show(isAdminCheck));
-    
-    let hasPermissionCheck = AccessControl.hasPermission(accessControlState, caller, #admin);
-    Debug.print("hasPermission(#admin) check result: " # debug_show(hasPermissionCheck));
-    
-    if (not hasPermissionCheck) {
-      Debug.print("Authorization FAILED: User does not have admin permission");
-      Runtime.trap("Unauthorized: Only admins can add products");
-    };
-
-    Debug.print("Authorization SUCCESSFUL: Proceeding to add product");
     Debug.print("Product title: " # input.title);
+
+    // Any authenticated user can add products
+    if (not isAuthenticatedUser(caller)) {
+      Debug.print("Authorization failed: User is not authenticated");
+      Runtime.trap("Unauthorized: Only authenticated users can add products");
+    };
 
     let id = productCounter;
     productCounter += 1;

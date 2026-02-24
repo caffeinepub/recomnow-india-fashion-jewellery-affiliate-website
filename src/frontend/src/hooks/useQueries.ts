@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { toast } from 'sonner';
 import type { ProductInput, ProductCategory, FashionCategory } from '../backend';
-import { useAuth } from './useAuth';
 
 // Optimized stale time and cache time for better performance
 const DEFAULT_STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -145,91 +144,153 @@ export function useFilterProducts(
   });
 }
 
+// Helper function to extract and format error details
+function extractErrorDetails(error: any): { message: string; isAuthError: boolean; fullError: any } {
+  console.group('🔍 ERROR DETAILS EXTRACTION');
+  console.log('Raw error object:', error);
+  console.log('Error type:', typeof error);
+  console.log('Error constructor:', error?.constructor?.name);
+  console.log('Error keys:', error ? Object.keys(error) : 'null');
+  
+  let message = 'An unknown error occurred';
+  let isAuthError = false;
+
+  // Check various error formats
+  if (error?.message) {
+    message = error.message;
+    console.log('Error message found:', message);
+  } else if (typeof error === 'string') {
+    message = error;
+    console.log('Error is string:', message);
+  } else if (error?.toString && typeof error.toString === 'function') {
+    message = error.toString();
+    console.log('Error toString():', message);
+  }
+
+  // Check if it's an authorization error
+  const authKeywords = ['unauthorized', 'permission', 'admin', 'access denied', 'forbidden'];
+  const lowerMessage = message.toLowerCase();
+  isAuthError = authKeywords.some(keyword => lowerMessage.includes(keyword));
+  
+  console.log('Is authorization error:', isAuthError);
+  console.log('Final extracted message:', message);
+  console.groupEnd();
+
+  return { message, isAuthError, fullError: error };
+}
+
 // Product Mutations
 export function useAddProduct() {
   const { actor } = useActor();
-  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: ProductInput) => {
-      console.log('[useAddProduct] Mutation called', {
-        timestamp: new Date().toISOString(),
-        hasActor: !!actor,
-        hasSessionToken: !!sessionToken,
-        sessionTokenLength: sessionToken?.length,
-        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 10) + '...' : 'null',
-        username,
-        productTitle: input.title,
+      console.group('🚀 ADD PRODUCT MUTATION');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Product Input:', {
+        title: input.title,
+        category: input.category,
+        price: input.price.toString(),
+        mrp: input.mrp.toString(),
+        discountPercentage: input.discountPercentage.toString(),
+        isFeatured: input.isFeatured,
       });
 
       if (!actor) {
-        console.error('[useAddProduct] Actor not available');
+        console.error('❌ Actor not available');
+        console.groupEnd();
         throw new Error('Actor not available');
       }
 
-      console.log('[useAddProduct] About to call actor.addProduct', {
-        timestamp: new Date().toISOString(),
-        input: {
-          title: input.title,
-          category: input.category,
-          price: input.price.toString(),
-        },
-      });
+      console.log('✅ Actor available, calling actor.addProduct...');
 
       try {
         const result = await actor.addProduct(input);
-        console.log('[useAddProduct] actor.addProduct succeeded', {
-          timestamp: new Date().toISOString(),
-          result: result.toString(),
-        });
+        console.log('✅ actor.addProduct succeeded');
+        console.log('Result:', result.toString());
+        console.groupEnd();
         return result;
       } catch (error: any) {
-        console.error('[useAddProduct] actor.addProduct failed', {
-          timestamp: new Date().toISOString(),
-          error: error.message || error,
-          errorType: typeof error,
-          errorStack: error.stack,
-        });
+        console.error('❌ actor.addProduct FAILED');
+        console.error('Error object:', error);
+        console.error('Error message:', error?.message);
+        console.error('Error type:', typeof error);
+        console.error('Error stack:', error?.stack);
+        
+        // Try to extract more details
+        if (error?.reject_message) {
+          console.error('Reject message:', error.reject_message);
+        }
+        if (error?.reject_code) {
+          console.error('Reject code:', error.reject_code);
+        }
+        
+        console.groupEnd();
         throw error;
       }
     },
     onSuccess: () => {
-      console.log('[useAddProduct] Mutation onSuccess callback');
+      console.log('✅ [useAddProduct] Mutation onSuccess callback');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['allProducts'] });
       queryClient.invalidateQueries({ queryKey: ['fashionProducts'] });
       toast.success('Product added successfully!');
     },
     onError: (error: any) => {
-      console.error('[useAddProduct] Mutation onError callback', {
-        timestamp: new Date().toISOString(),
-        error: error?.message || error,
-        errorType: typeof error,
+      console.group('❌ ADD PRODUCT ERROR HANDLER');
+      console.log('Timestamp:', new Date().toISOString());
+      
+      const { message, isAuthError, fullError } = extractErrorDetails(error);
+      
+      console.log('Processed error details:', {
+        message,
+        isAuthError,
+        fullError,
       });
-      toast.error(error?.message || 'Failed to add product. Please try again.');
+
+      if (isAuthError) {
+        console.error('🔒 AUTHORIZATION ERROR DETECTED');
+        console.error('This is an authorization/permission error');
+        toast.error(`Authorization Error: ${message}`);
+      } else {
+        console.error('⚠️ GENERAL ERROR');
+        toast.error(`Error: ${message}`);
+      }
+      
+      console.groupEnd();
     },
   });
 }
 
 export function useUpdateProduct() {
   const { actor } = useActor();
-  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, ...input }: ProductInput & { id: bigint }) => {
-      console.log('[useUpdateProduct] Mutation called', {
-        timestamp: new Date().toISOString(),
-        hasActor: !!actor,
-        hasSessionToken: !!sessionToken,
-        sessionTokenLength: sessionToken?.length,
-        username,
-        productId: id.toString(),
-      });
+      console.group('🔄 UPDATE PRODUCT MUTATION');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Product ID:', id.toString());
+      console.log('Product Input:', input);
 
-      if (!actor) throw new Error('Actor not available');
-      return await actor.updateProduct(id, input);
+      if (!actor) {
+        console.error('❌ Actor not available');
+        console.groupEnd();
+        throw new Error('Actor not available');
+      }
+
+      try {
+        const result = await actor.updateProduct(id, input);
+        console.log('✅ actor.updateProduct succeeded');
+        console.groupEnd();
+        return result;
+      } catch (error: any) {
+        console.error('❌ actor.updateProduct FAILED');
+        console.error('Error:', error);
+        console.groupEnd();
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -238,30 +299,49 @@ export function useUpdateProduct() {
       toast.success('Product updated successfully!');
     },
     onError: (error: any) => {
-      console.error('[useUpdateProduct] Update product error:', error);
-      toast.error(error?.message || 'Failed to update product. Please try again.');
+      console.group('❌ UPDATE PRODUCT ERROR HANDLER');
+      const { message, isAuthError } = extractErrorDetails(error);
+      
+      if (isAuthError) {
+        console.error('🔒 AUTHORIZATION ERROR DETECTED');
+        toast.error(`Authorization Error: ${message}`);
+      } else {
+        console.error('⚠️ GENERAL ERROR');
+        toast.error(`Error: ${message}`);
+      }
+      
+      console.groupEnd();
     },
   });
 }
 
 export function useDeleteProduct() {
   const { actor } = useActor();
-  const { sessionToken, username } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: bigint) => {
-      console.log('[useDeleteProduct] Mutation called', {
-        timestamp: new Date().toISOString(),
-        hasActor: !!actor,
-        hasSessionToken: !!sessionToken,
-        sessionTokenLength: sessionToken?.length,
-        username,
-        productId: id.toString(),
-      });
+      console.group('🗑️ DELETE PRODUCT MUTATION');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Product ID:', id.toString());
 
-      if (!actor) throw new Error('Actor not available');
-      return await actor.deleteProduct(id);
+      if (!actor) {
+        console.error('❌ Actor not available');
+        console.groupEnd();
+        throw new Error('Actor not available');
+      }
+
+      try {
+        const result = await actor.deleteProduct(id);
+        console.log('✅ actor.deleteProduct succeeded');
+        console.groupEnd();
+        return result;
+      } catch (error: any) {
+        console.error('❌ actor.deleteProduct FAILED');
+        console.error('Error:', error);
+        console.groupEnd();
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -270,8 +350,18 @@ export function useDeleteProduct() {
       toast.success('Product deleted successfully!');
     },
     onError: (error: any) => {
-      console.error('[useDeleteProduct] Delete product error:', error);
-      toast.error(error?.message || 'Failed to delete product. Please try again.');
+      console.group('❌ DELETE PRODUCT ERROR HANDLER');
+      const { message, isAuthError } = extractErrorDetails(error);
+      
+      if (isAuthError) {
+        console.error('🔒 AUTHORIZATION ERROR DETECTED');
+        toast.error(`Authorization Error: ${message}`);
+      } else {
+        console.error('⚠️ GENERAL ERROR');
+        toast.error(`Error: ${message}`);
+      }
+      
+      console.groupEnd();
     },
   });
 }

@@ -1,18 +1,21 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "E-commerce application with product management and authentication",
+  "architectural_notes": [
+    "Product upload functionality with authentication guard",
+    "Admin authorization system for product management"
+  ],
   "known_issues": [
-    "Authorization issue when adding products not yet resolved"
+    "Authorization error persisting: 'Only admins can add products' blocking authenticated users from uploading products (20+ versions attempted)"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-change-the-font-color-of-all-primary-action-buttons-in-the-admin-panel-to-blue-including-log-in-log-out-add-product-edit-delete-and-any-other-action-buttons-in-adminlogin-tsx-adminpanel-tsx-and-productmanagement-tsx-components",
-      "title": "Change the font color of all primary action buttons in the Admin Panel to blue, including: 'Log In', 'Log Out', 'Add Product', 'Edit', 'Delete', and any other action buttons in AdminLogin.tsx, AdminPanel.tsx, and ProductManagement.tsx components",
+      "id": "feature-update-the-frontend-productmanagement-component-to-remove-or-adjust-any-client-side-admin-checks-that-might-be-preventing-product-uploads-for-authenticated-non-admin-users",
+      "title": "Update the frontend ProductManagement component to remove or adjust any client-side admin checks that might be preventing product uploads for authenticated non-admin users",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "version": 1
     }
@@ -20,18 +23,14 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix authorization issue for adding products",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Change font colors to blue in Admin Panel (Log in, Log out, Add Product buttons)",
-      "reqIds": [],
+      "summary": "Modify the backend authorization logic to allow any authenticated user (either via custom auth session or Internet Identity) to add products, removing the admin-only restriction",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Change Admin Panel button font colors to blue for better visibility",
+  "projectName": "Remove admin restriction on product uploads",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
