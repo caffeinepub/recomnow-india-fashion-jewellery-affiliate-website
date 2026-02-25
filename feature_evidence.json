@@ -1,0 +1,53 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-fix-the-products-page-regression-introduced-in-version-117-where-no-products-are-displayed-the-productgrid-component-must-correctly-fetch-products-from-the-backend-and-render-them-in-the-filterable-paginated-grid-as-before",
+      "featureTitle": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
+      "files": [
+        "frontend/src/components/ProductGrid.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/ProductsPage.tsx"
+      ],
+      "components": [
+        "authorization@3.0.0",
+        "http-outcalls@3.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-admin-login-regression-introduced-in-version-117-where-the-login-facility-is-not-working-both-custom-username-password-authentication-and-internet-identity-login-in-the-adminlogin-component-must-complete-successfully-persist-session-state-and-grant-access-to-the-admin-panel",
+      "featureTitle": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
+      "files": [
+        "frontend/src/components/AdminLogin.tsx",
+        "frontend/src/components/AdminPanel.tsx",
+        "frontend/src/hooks/useAuth.ts",
+        "frontend/src/hooks/useBackendAuth.ts",
+        "frontend/src/pages/AdminPage.tsx"
+      ],
+      "components": [
+        "authorization@3.0.0",
+        "http-outcalls@3.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

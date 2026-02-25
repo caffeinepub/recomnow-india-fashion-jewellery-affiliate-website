@@ -1,0 +1,63 @@
+{
+  "kind": "build_request",
+  "title": "Fix Products Page and Login Not Working (Version 117 Regression)",
+  "projectName": "RecomNow India",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Products page is not showing anything."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating to the Products page renders the product grid with products fetched from the backend.",
+        "Category filters, price slider, and pagination controls function correctly.",
+        "Loading and error states are handled gracefully.",
+        "No console errors related to product fetching or rendering."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Login facility also not working."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can log in using a valid username and password via the custom auth flow.",
+        "Admin can log in using Internet Identity.",
+        "After successful login, the Admin Panel is accessible and the session persists across page refreshes.",
+        "Failed login attempts show appropriate error messages.",
+        "Logout clears the session correctly.",
+        "No console errors related to authentication or session management."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not remove or alter Google Analytics integration added in Version 117.",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Preserve existing backend data schema and all stored product/user/session data."
+  ],
+  "nonGoals": [
+    "Adding new features or pages.",
+    "Redesigning the UI or changing the visual theme.",
+    "Modifying blog, newsletter, or site pages management placeholders.",
+    "Performance optimizations beyond fixing the regressions."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

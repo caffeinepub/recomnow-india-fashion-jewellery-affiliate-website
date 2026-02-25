@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Products page not showing any products (regression in Version 117)",
+    "Login facility not working (regression in Version 117)"
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-fix-the-products-page-regression-introduced-in-version-117-where-no-products-are-displayed-the-productgrid-component-must-correctly-fetch-products-from-the-backend-and-render-them-in-the-filterable-paginated-grid-as-before",
+      "title": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-login-regression-introduced-in-version-117-where-the-login-facility-is-not-working-both-custom-username-password-authentication-and-internet-identity-login-in-the-adminlogin-component-must-complete-successfully-persist-session-state-and-grant-access-to-the-admin-panel",
+      "title": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [],
+  "projectName": "RecomNow India",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

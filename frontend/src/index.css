@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - Gold and Navy color scheme with WCAG AA+ compliance */
+    --background: oklch(0.99 0.01 60);
+    --foreground: oklch(0.20 0.02 240);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.20 0.02 240);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.20 0.02 240);
+
+    --primary: oklch(0.45 0.18 50);
+    --primary-foreground: oklch(0.99 0.01 60);
+
+    --secondary: oklch(0.92 0.02 60);
+    --secondary-foreground: oklch(0.20 0.02 240);
+
+    --muted: oklch(0.94 0.02 60);
+    --muted-foreground: oklch(0.40 0.05 240);
+
+    --accent: oklch(0.92 0.02 60);
+    --accent-foreground: oklch(0.20 0.02 240);
+
+    --destructive: oklch(0.50 0.25 25);
+    --destructive-foreground: oklch(0.99 0.01 60);
+
+    --border: oklch(0.88 0.02 60);
+    --input: oklch(0.88 0.02 60);
+    --ring: oklch(0.45 0.18 50);
+
+    --radius: 0.5rem;
+
+    --success: oklch(0.55 0.20 145);
+    --success-foreground: oklch(0.99 0.01 60);
+
+    --warning: oklch(0.65 0.20 70);
+    --warning-foreground: oklch(0.20 0.02 240);
+
+    --chart-1: oklch(0.45 0.18 50);
+    --chart-2: oklch(0.20 0.02 240);
+    --chart-3: oklch(0.55 0.20 145);
+    --chart-4: oklch(0.65 0.20 70);
+    --chart-5: oklch(0.50 0.25 25);
+  }
+
+  .dark {
+    /* Dark mode - Gold and Navy color scheme with WCAG AA+ compliance */
+    --background: oklch(0.18 0.02 240);
+    --foreground: oklch(0.95 0.01 60);
+
+    --card: oklch(0.20 0.02 240);
+    --card-foreground: oklch(0.95 0.01 60);
+
+    --popover: oklch(0.20 0.02 240);
+    --popover-foreground: oklch(0.95 0.01 60);
+
+    --primary: oklch(0.45 0.18 50);
+    --primary-foreground: oklch(0.99 0.01 60);
+
+    --secondary: oklch(0.25 0.02 240);
+    --secondary-foreground: oklch(0.95 0.01 60);
+
+    --muted: oklch(0.25 0.02 240);
+    --muted-foreground: oklch(0.60 0.05 60);
+
+    --accent: oklch(0.25 0.02 240);
+    --accent-foreground: oklch(0.95 0.01 60);
+
+    --destructive: oklch(0.50 0.25 25);
+    --destructive-foreground: oklch(0.99 0.01 60);
+
+    --border: oklch(0.25 0.02 240);
+    --input: oklch(0.25 0.02 240);
+    --ring: oklch(0.45 0.18 50);
+
+    --success: oklch(0.55 0.20 145);
+    --success-foreground: oklch(0.99 0.01 60);
+
+    --warning: oklch(0.65 0.20 70);
+    --warning-foreground: oklch(0.20 0.02 240);
+
+    --chart-1: oklch(0.45 0.18 50);
+    --chart-2: oklch(0.95 0.01 60);
+    --chart-3: oklch(0.55 0.20 145);
+    --chart-4: oklch(0.65 0.20 70);
+    --chart-5: oklch(0.50 0.25 25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer utilities {
+  .card-hover-effect {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover-effect:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Custom styling for price range slider */
+.price-range-slider [role="slider"] {
+  background-color: #ec4899 !important;
+  border-color: #ec4899 !important;
+}
+
+.price-range-slider [data-orientation="horizontal"] {
+  background-color: #fce7f3 !important;
+}
+
+.price-range-slider [data-orientation="horizontal"] > span {
+  background-color: #ec4899 !important;
+}
