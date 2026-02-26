@@ -1,94 +1,79 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useAuth } from '../hooks/useAuth';
 import { useLogoutUser } from '../hooks/useBackendAuth';
 import { useQueryClient } from '@tanstack/react-query';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import ProductManagement from './admin/ProductManagement';
 import BlogManagement from './admin/BlogManagement';
 import NewsletterManagement from './admin/NewsletterManagement';
 import SitePagesManagement from './admin/SitePagesManagement';
 
-type AdminTab = 'products' | 'blog' | 'newsletter' | 'pages';
-
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<AdminTab>('products');
-  const { identity, clear: iiClear } = useInternetIdentity();
-  const { sessionToken, username, clearSession } = useAuth();
+  const { identity, clear: clearII } = useInternetIdentity();
+  const { username, clearSession } = useAuth();
   const logoutMutation = useLogoutUser();
   const queryClient = useQueryClient();
 
-  const isIIAuthenticated = !!identity;
-  const isCustomAuthenticated = !!sessionToken;
+  const displayName = username || (identity ? identity.getPrincipal().toString().slice(0, 12) + '…' : 'Admin');
 
   const handleLogout = async () => {
-    if (isCustomAuthenticated) {
+    try {
       await logoutMutation.mutateAsync();
+    } catch {
+      // Force logout even on error
+      clearSession();
+      queryClient.clear();
     }
-    if (isIIAuthenticated) {
-      await iiClear();
+    if (identity) {
+      try { await clearII(); } catch { /* ignore */ }
     }
-    queryClient.clear();
   };
-
-  const displayName = username || (identity ? identity.getPrincipal().toString().slice(0, 12) + '...' : 'Admin');
-
-  const tabs: { id: AdminTab; label: string }[] = [
-    { id: 'products', label: 'Products' },
-    { id: 'blog', label: 'Blog' },
-    { id: 'newsletter', label: 'Newsletter' },
-    { id: 'pages', label: 'Site Pages' },
-  ];
 
   return (
     <div className="min-h-screen bg-navy-50">
-      {/* Header */}
-      <header className="bg-navy-900 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">👑</span>
-            <div>
-              <h1 className="text-xl font-bold">Admin Panel</h1>
-              <p className="text-navy-300 text-xs">Welcome, {displayName}</p>
-            </div>
+      {/* Top bar */}
+      <div className="bg-navy-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🛡️</span>
+          <div>
+            <h1 className="font-bold text-lg leading-tight">Admin Panel</h1>
+            <p className="text-navy-300 text-xs">Welcome, {displayName}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            className="px-4 py-2 bg-transparent border border-navy-400 hover:border-white text-blue-300 hover:text-white rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
-          >
-            {logoutMutation.isPending ? 'Logging out...' : 'Log Out'}
-          </button>
         </div>
-      </header>
-
-      {/* Tab Navigation */}
-      <div className="bg-white border-b border-navy-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex gap-1 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-gold-500 text-gold-600'
-                    : 'border-transparent text-navy-600 hover:text-navy-900 hover:border-navy-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <button
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className="px-4 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          {logoutMutation.isPending ? 'Logging out…' : 'Logout'}
+        </button>
       </div>
 
-      {/* Tab Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'products' && <ProductManagement />}
-        {activeTab === 'blog' && <BlogManagement />}
-        {activeTab === 'newsletter' && <NewsletterManagement />}
-        {activeTab === 'pages' && <SitePagesManagement />}
-      </main>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Tabs defaultValue="products">
+          <TabsList className="mb-6 bg-white border border-navy-100 shadow-sm">
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger>
+            <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
+            <TabsTrigger value="pages">Site Pages</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="products">
+            <ProductManagement />
+          </TabsContent>
+          <TabsContent value="blog">
+            <BlogManagement />
+          </TabsContent>
+          <TabsContent value="newsletter">
+            <NewsletterManagement />
+          </TabsContent>
+          <TabsContent value="pages">
+            <SitePagesManagement />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

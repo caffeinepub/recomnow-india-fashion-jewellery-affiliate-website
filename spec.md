@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix two regressions introduced in Version 117 — the Products page not displaying products and the admin login not working.
+**Goal:** Fix product price decimal formatting and update the "Shop on Amazon" button color to soft pink across all product cards.
 
 **Planned changes:**
-- Fix the ProductGrid component to correctly fetch products from the backend and render them in the filterable, paginated grid with proper loading and error states.
-- Fix the AdminLogin component so both username/password and Internet Identity authentication flows complete successfully, persist session state, and grant access to the Admin Panel.
-- Ensure logout correctly clears the session and failed login attempts show appropriate error messages.
+- Fix price display in ProductGrid and all other product card/listing components so that integer prices (stored in paise) are divided by 100 and shown with 2 decimal places and the Rupee symbol (e.g., ₹1,399.00)
+- Change the background color of every "Shop on Amazon" button to a soft pink shade (e.g., bg-pink-300) with a matching hover state and legible text contrast
 
-**User-visible outcome:** The Products page displays products with working filters and pagination, and admins can log in via either authentication method to access the Admin Panel.
+**User-visible outcome:** Product prices display correctly with decimals and the Rupee symbol throughout the site, and all "Shop on Amazon" buttons appear in soft pink.

@@ -4,15 +4,20 @@ import OptimizedImage from './OptimizedImage';
 
 interface HeaderProps {
   currentRoute?: string;
+  onNavigate?: (path: string) => void;
 }
 
-const Header = memo(({ currentRoute = '/' }: HeaderProps) => {
+const Header = memo(({ currentRoute = '/', onNavigate }: HeaderProps) => {
   const isActive = (path: string) => currentRoute === path;
 
   const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault();
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.history.pushState({}, '', path);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
   };
 
   return (
@@ -20,10 +25,10 @@ const Header = memo(({ currentRoute = '/' }: HeaderProps) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <a 
-              href="/" 
+            <a
+              href="/"
               onClick={(e) => handleNavigation(e, '/')}
-              className="flex items-center gap-3"
+              className="flex items-center gap-3 cursor-pointer"
             >
               <OptimizedImage
                 src="/assets/generated/recomnow-logo.dim_200x200.png"
@@ -49,9 +54,9 @@ const Header = memo(({ currentRoute = '/' }: HeaderProps) => {
             <a
               href="/"
               onClick={(e) => handleNavigation(e, '/')}
-              className={`text-sm font-semibold transition-colors ${
-                isActive('/') 
-                  ? 'text-gold-700 border-b-2 border-gold-700' 
+              className={`text-sm font-semibold transition-colors cursor-pointer ${
+                isActive('/')
+                  ? 'text-gold-700 border-b-2 border-gold-700'
                   : 'text-navy-800 hover:text-gold-700'
               }`}
             >
@@ -60,9 +65,9 @@ const Header = memo(({ currentRoute = '/' }: HeaderProps) => {
             <a
               href="/products"
               onClick={(e) => handleNavigation(e, '/products')}
-              className={`text-sm font-semibold transition-colors ${
-                isActive('/products') 
-                  ? 'text-gold-700 border-b-2 border-gold-700' 
+              className={`text-sm font-semibold transition-colors cursor-pointer ${
+                isActive('/products')
+                  ? 'text-gold-700 border-b-2 border-gold-700'
                   : 'text-navy-800 hover:text-gold-700'
               }`}
             >
@@ -71,9 +76,9 @@ const Header = memo(({ currentRoute = '/' }: HeaderProps) => {
             <a
               href="/admin"
               onClick={(e) => handleNavigation(e, '/admin')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-sm transition-all shadow-md hover:shadow-lg ${
-                isActive('/admin') 
-                  ? 'bg-gold-600 text-white border-2 border-gold-700' 
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer ${
+                isActive('/admin')
+                  ? 'bg-gold-600 text-white border-2 border-gold-700'
                   : 'bg-gradient-to-r from-gold-500 to-gold-600 text-white hover:from-gold-600 hover:to-gold-700'
               }`}
             >

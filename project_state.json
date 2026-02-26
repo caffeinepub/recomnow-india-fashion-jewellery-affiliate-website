@@ -1,32 +1,45 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "E-commerce product listing app with Indian Rupee pricing and Amazon shopping integration.",
   "architectural_notes": [],
   "known_issues": [
-    "Products page not showing any products (regression in Version 117)",
-    "Login facility not working (regression in Version 117)"
+    "Rupee price amounts displaying without decimals (e.g., 139900 instead of 1399.00)"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-products-page-regression-introduced-in-version-117-where-no-products-are-displayed-the-productgrid-component-must-correctly-fetch-products-from-the-backend-and-render-them-in-the-filterable-paginated-grid-as-before",
-      "title": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
+      "id": "feature-fix-the-rupee-price-display-in-the-productgrid-component-and-any-other-product-card-listing-components-so-that-prices-are-correctly-formatted-with-decimals-prices-stored-as-integers-e-g-139900-representing-paise-must-be-divided-by-100-and-displayed-with-2-decimal-places-using-the-indian-rupee-symbol-e-g-rs-1-399-00-ensure-this-fix-is-applied-consistently-wherever-product-prices-are-rendered-across-the-application",
+      "title": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-admin-login-regression-introduced-in-version-117-where-the-login-facility-is-not-working-both-custom-username-password-authentication-and-internet-identity-login-in-the-adminlogin-component-must-complete-successfully-persist-session-state-and-grant-access-to-the-admin-panel",
-      "title": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
+      "id": "feature-change-the-shop-on-amazon-button-color-to-soft-pink-for-every-product-card-in-the-productgrid-component-and-any-other-location-where-this-button-appears-use-a-soft-light-pink-color-e-g-bg-pink-300-or-similar-tailwind-soft-pink-shade-for-the-button-background-ensuring-readable-text-contrast-and-hover-state-consistency",
+      "title": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Fix Rupee price display to show correct decimal format (e.g., Rs.1399.00 instead of 139900) for all products",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Change 'Shop on Amazon' button color to soft pink for every product",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
   "projectName": "RecomNow India",
   "clarification_mode": "instant",
   "clarification_rounds": 0

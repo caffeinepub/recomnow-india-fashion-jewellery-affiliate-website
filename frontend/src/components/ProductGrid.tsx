@@ -1,390 +1,305 @@
 import React, { useState, useMemo } from 'react';
 import { useGetAllProducts } from '../hooks/useQueries';
-import type { Product } from '../backend';
-import { FashionCategory, JewelleryCategory } from '../backend';
+import { useActor } from '../hooks/useActor';
+import type { Product, ProductCategory, FashionCategory, JewelleryCategory } from '../backend';
+import OptimizedImage from './OptimizedImage';
+import Spinner from './Spinner';
 
-const PRODUCTS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 12;
 
 type CategoryFilter =
   | 'all'
-  | 'fashion'
-  | 'fashion_sarees'
-  | 'fashion_kurtaKurtis'
-  | 'fashion_festive'
-  | 'fashion_gowns'
-  | 'fashion_salwarSuits'
-  | 'fashion_lehengaCholis'
-  | 'fashion_westernWear'
-  | 'fashion_sportsWear'
-  | 'jewellery'
-  | 'jewellery_rings'
-  | 'jewellery_necklaces';
+  | 'sarees'
+  | 'kurtaKurtis'
+  | 'festive'
+  | 'gowns'
+  | 'salwarSuits'
+  | 'lehengaCholis'
+  | 'westernWear'
+  | 'sportsWear'
+  | 'rings'
+  | 'necklaces';
+
+const CATEGORY_LABELS: Record<CategoryFilter, string> = {
+  all: 'All',
+  sarees: 'Sarees',
+  kurtaKurtis: 'Kurta & Kurtis',
+  festive: 'Festive',
+  gowns: 'Gowns',
+  salwarSuits: 'Salwar Suits',
+  lehengaCholis: 'Lehenga Cholis',
+  westernWear: 'Western Wear',
+  sportsWear: 'Sports Wear',
+  rings: 'Rings',
+  necklaces: 'Necklaces',
+};
 
 function matchesCategory(product: Product, filter: CategoryFilter): boolean {
   if (filter === 'all') return true;
   const cat = product.category;
-  if (filter === 'fashion') return cat.__kind__ === 'fashion';
-  if (filter === 'jewellery') return cat.__kind__ === 'jewellery';
-  if (filter.startsWith('fashion_') && cat.__kind__ === 'fashion') {
-    const sub = filter.replace('fashion_', '');
-    return cat.fashion === sub;
+  if (cat.__kind__ === 'fashion') {
+    return (cat.fashion as string) === filter;
   }
-  if (filter.startsWith('jewellery_') && cat.__kind__ === 'jewellery') {
-    const sub = filter.replace('jewellery_', '');
-    return cat.jewellery === sub;
+  if (cat.__kind__ === 'jewellery') {
+    return (cat.jewellery as string) === filter;
   }
   return false;
 }
 
-function getCategoryLabel(filter: CategoryFilter): string {
-  const labels: Record<CategoryFilter, string> = {
-    all: 'All Products',
-    fashion: 'Fashion',
-    fashion_sarees: 'Sarees',
-    fashion_kurtaKurtis: 'Kurta & Kurtis',
-    fashion_festive: 'Festive',
-    fashion_gowns: 'Gowns',
-    fashion_salwarSuits: 'Salwar Suits',
-    fashion_lehengaCholis: 'Lehenga Cholis',
-    fashion_westernWear: 'Western Wear',
-    fashion_sportsWear: 'Sports Wear',
-    jewellery: 'Jewellery',
-    jewellery_rings: 'Rings',
-    jewellery_necklaces: 'Necklaces',
-  };
-  return labels[filter] || filter;
+function getProductImageUrl(product: Product): string {
+  if (product.imageBlob) {
+    return product.imageBlob.getDirectURL();
+  }
+  return product.imageUrl || '/assets/generated/costume-jewellery.dim_400x300.png';
 }
 
-function ProductCard({ product }: { product: Product }) {
+/**
+ * Formats a price stored in paise (integer) to a Rupee string with 2 decimal places.
+ * e.g. 139900 paise → "₹1,399.00"
+ */
+function formatPrice(paise: number): string {
+  const rupees = paise / 100;
+  return '₹' + rupees.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+interface ProductCardProps {
+  product: Product;
+}
+
+function ProductCard({ product }: ProductCardProps) {
   const price = Number(product.price);
   const mrp = Number(product.mrp);
   const discount = Number(product.discountPercentage);
-
-  const imageUrl = product.imageBlob
-    ? product.imageBlob.getDirectURL()
-    : product.imageUrl;
+  const imageUrl = getProductImageUrl(product);
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-      <div className="relative aspect-[4/3] bg-navy-50 overflow-hidden">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={product.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-navy-300">
-            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        )}
+    <a
+      href={product.affiliateLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col border border-navy-100 hover:border-gold-300"
+    >
+      <div className="relative overflow-hidden bg-navy-50 aspect-[4/3]">
+        <OptimizedImage
+          src={imageUrl}
+          alt={product.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
         {discount > 0 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            -{discount}%
-          </div>
+          <span className="absolute top-2 left-2 bg-gold-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {discount}% OFF
+          </span>
         )}
         {product.isFeatured && (
-          <div className="absolute top-2 left-2 bg-gold-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <span className="absolute top-2 right-2 bg-navy-900 text-white text-xs font-semibold px-2 py-1 rounded-full">
             ⭐ Featured
-          </div>
+          </span>
         )}
       </div>
 
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-navy-900 text-sm leading-tight mb-2 line-clamp-2">
+        <h3 className="text-navy-900 font-semibold text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gold-600 transition-colors">
           {product.title}
         </h3>
-
         {product.description && (
-          <p className="text-navy-500 text-xs mb-3 line-clamp-2">{product.description}</p>
+          <p className="text-navy-500 text-xs line-clamp-2 mb-3">{product.description}</p>
         )}
-
-        <div className="mt-auto">
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-lg font-bold text-navy-900">₹{price.toLocaleString('en-IN')}</span>
-            {mrp > price && (
-              <span className="text-sm text-navy-400 line-through">₹{mrp.toLocaleString('en-IN')}</span>
-            )}
-          </div>
-
-          <a
-            href={product.affiliateLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full text-center py-2 px-4 bg-green-100 hover:bg-green-200 text-pink-600 font-semibold text-sm rounded-lg transition-colors"
-          >
-            Shop Now on Amazon
-          </a>
+        <div className="mt-auto flex items-center gap-2 flex-wrap">
+          <span className="text-gold-600 font-bold text-base">{formatPrice(price)}</span>
+          {mrp > price && (
+            <span className="text-navy-400 text-xs line-through">{formatPrice(mrp)}</span>
+          )}
+        </div>
+        <div className="mt-3">
+          <span className="inline-block w-full text-center bg-pink-300 hover:bg-pink-400 text-pink-900 text-xs font-semibold py-2 rounded-lg transition-colors">
+            Shop on Amazon →
+          </span>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
 export default function ProductGrid() {
+  const { isFetching: actorFetching } = useActor();
   const { data: products, isLoading, isError, error } = useGetAllProducts();
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [maxPrice, setMaxPrice] = useState<number>(10000);
+
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [fashionOpen, setFashionOpen] = useState(true);
-  const [jewelleryOpen, setJewelleryOpen] = useState(true);
+  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'discount'>('default');
 
-  const allProducts = products ?? [];
+  const filtered = useMemo(() => {
+    let list = products ?? [];
+    if (activeCategory !== 'all') {
+      list = list.filter(p => matchesCategory(p, activeCategory));
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(p => p.title.toLowerCase().includes(q));
+    }
+    if (sortBy === 'price-asc') list = [...list].sort((a, b) => Number(a.price) - Number(b.price));
+    else if (sortBy === 'price-desc') list = [...list].sort((a, b) => Number(b.price) - Number(a.price));
+    else if (sortBy === 'discount') list = [...list].sort((a, b) => Number(b.discountPercentage) - Number(a.discountPercentage));
+    return list;
+  }, [products, activeCategory, searchQuery, sortBy]);
 
-  const maxProductPrice = useMemo(() => {
-    if (allProducts.length === 0) return 10000;
-    return Math.max(...allProducts.map((p) => Number(p.price)), 10000);
-  }, [allProducts]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter((p) => {
-      const priceMatch = Number(p.price) <= maxPrice;
-      const catMatch = matchesCategory(p, categoryFilter);
-      return priceMatch && catMatch;
-    });
-  }, [allProducts, categoryFilter, maxPrice]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginatedProducts = filteredProducts.slice(
-    (safePage - 1) * PRODUCTS_PER_PAGE,
-    safePage * PRODUCTS_PER_PAGE
-  );
-
-  const handleCategoryChange = (filter: CategoryFilter) => {
-    setCategoryFilter(filter);
+  const handleCategoryChange = (cat: CategoryFilter) => {
+    setActiveCategory(cat);
     setCurrentPage(1);
   };
 
-  const handlePriceChange = (value: number) => {
-    setMaxPrice(value);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500 mb-4"></div>
-        <p className="text-navy-600">Loading products...</p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-        <div className="text-5xl mb-4">⚠️</div>
-        <h3 className="text-xl font-semibold text-navy-900 mb-2">Failed to load products</h3>
-        <p className="text-navy-600 text-sm">{error instanceof Error ? error.message : 'Please try again later.'}</p>
-      </div>
-    );
-  }
+  // Show spinner while actor is initializing or products are loading
+  const showSpinner = actorFetching || isLoading;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Sidebar Filters */}
-      <aside className="lg:w-64 flex-shrink-0">
-        <div className="bg-white rounded-xl shadow-md p-5 sticky top-4">
-          <h2 className="font-bold text-navy-900 text-lg mb-4">Filters</h2>
+    <section id="products" className="py-10">
+      {/* Search & Sort bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search products…"
+          className="flex-1 px-4 py-2 border border-navy-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 bg-white"
+        />
+        <select
+          value={sortBy}
+          onChange={e => { setSortBy(e.target.value as typeof sortBy); setCurrentPage(1); }}
+          className="px-3 py-2 border border-navy-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 bg-white text-navy-700"
+        >
+          <option value="default">Sort: Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="discount">Highest Discount</option>
+        </select>
+      </div>
 
-          {/* Price Range */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-navy-800 text-sm mb-2">Max Price</h3>
-            <input
-              type="range"
-              min={0}
-              max={maxProductPrice}
-              value={maxPrice}
-              onChange={(e) => handlePriceChange(Number(e.target.value))}
-              className="w-full price-range-slider"
-            />
-            <div className="flex justify-between text-xs text-navy-500 mt-1">
-              <span>₹0</span>
-              <span className="font-semibold text-navy-800">₹{maxPrice.toLocaleString('en-IN')}</span>
-              <span>₹{maxProductPrice.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
+      {/* Category filters */}
+      <div className="flex gap-2 flex-wrap mb-6">
+        {(Object.keys(CATEGORY_LABELS) as CategoryFilter[]).map(cat => (
+          <button
+            key={cat}
+            onClick={() => handleCategoryChange(cat)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+              activeCategory === cat
+                ? 'bg-gold-500 text-white border-gold-500'
+                : 'bg-white text-navy-600 border-navy-200 hover:border-gold-400 hover:text-gold-600'
+            }`}
+          >
+            {CATEGORY_LABELS[cat]}
+          </button>
+        ))}
+      </div>
 
-          {/* Category Filters */}
-          <div>
-            <h3 className="font-semibold text-navy-800 text-sm mb-2">Category</h3>
-
-            <button
-              onClick={() => handleCategoryChange('all')}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
-                categoryFilter === 'all'
-                  ? 'bg-gold-100 text-gold-800 font-semibold'
-                  : 'text-navy-700 hover:bg-navy-50'
-              }`}
-            >
-              All Products
-            </button>
-
-            {/* Fashion */}
-            <div className="mb-1">
-              <button
-                onClick={() => setFashionOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-navy-700 hover:bg-navy-50 transition-colors"
-              >
-                <span
-                  className={`font-medium cursor-pointer ${categoryFilter === 'fashion' ? 'text-gold-700' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleCategoryChange('fashion'); }}
-                >
-                  Fashion
-                </span>
-                <span className="text-navy-400">{fashionOpen ? '▲' : '▼'}</span>
-              </button>
-              {fashionOpen && (
-                <div className="ml-3 space-y-0.5">
-                  {(
-                    [
-                      ['fashion_sarees', 'Sarees'],
-                      ['fashion_kurtaKurtis', 'Kurta & Kurtis'],
-                      ['fashion_festive', 'Festive'],
-                      ['fashion_gowns', 'Gowns'],
-                      ['fashion_salwarSuits', 'Salwar Suits'],
-                      ['fashion_lehengaCholis', 'Lehenga Cholis'],
-                      ['fashion_westernWear', 'Western Wear'],
-                      ['fashion_sportsWear', 'Sports Wear'],
-                    ] as [CategoryFilter, string][]
-                  ).map(([val, label]) => (
-                    <button
-                      key={val}
-                      onClick={() => handleCategoryChange(val)}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                        categoryFilter === val
-                          ? 'bg-gold-100 text-gold-800 font-semibold'
-                          : 'text-navy-600 hover:bg-navy-50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Jewellery */}
-            <div>
-              <button
-                onClick={() => setJewelleryOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-navy-700 hover:bg-navy-50 transition-colors"
-              >
-                <span
-                  className={`font-medium cursor-pointer ${categoryFilter === 'jewellery' ? 'text-gold-700' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleCategoryChange('jewellery'); }}
-                >
-                  Jewellery
-                </span>
-                <span className="text-navy-400">{jewelleryOpen ? '▲' : '▼'}</span>
-              </button>
-              {jewelleryOpen && (
-                <div className="ml-3 space-y-0.5">
-                  {(
-                    [
-                      ['jewellery_rings', 'Rings'],
-                      ['jewellery_necklaces', 'Necklaces'],
-                    ] as [CategoryFilter, string][]
-                  ).map(([val, label]) => (
-                    <button
-                      key={val}
-                      onClick={() => handleCategoryChange(val)}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                        categoryFilter === val
-                          ? 'bg-gold-100 text-gold-800 font-semibold'
-                          : 'text-navy-600 hover:bg-navy-50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Loading state */}
+      {showSpinner && (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Spinner />
+          <p className="text-navy-500 text-sm">Loading products…</p>
         </div>
-      </aside>
+      )}
 
-      {/* Product Grid */}
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-navy-600 text-sm">
-            Showing <span className="font-semibold text-navy-900">{filteredProducts.length}</span> products
-            {categoryFilter !== 'all' && (
-              <span> in <span className="font-semibold text-gold-700">{getCategoryLabel(categoryFilter)}</span></span>
-            )}
+      {/* Error state */}
+      {!showSpinner && isError && (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <div className="text-4xl">⚠️</div>
+          <p className="text-navy-700 font-semibold">Failed to load products</p>
+          <p className="text-navy-500 text-sm text-center max-w-sm">
+            {error instanceof Error ? error.message : 'An unexpected error occurred. Please refresh the page.'}
           </p>
         </div>
+      )}
 
-        {paginatedProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="text-5xl mb-4">🛍️</div>
-            <h3 className="text-xl font-semibold text-navy-900 mb-2">No products found</h3>
-            <p className="text-navy-600 text-sm">Try adjusting your filters or browse all categories.</p>
+      {/* Empty state */}
+      {!showSpinner && !isError && filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <div className="text-5xl">🛍️</div>
+          <p className="text-navy-700 font-semibold text-lg">
+            {searchQuery || activeCategory !== 'all' ? 'No products match your filters' : 'No products available yet'}
+          </p>
+          <p className="text-navy-500 text-sm text-center max-w-sm">
+            {searchQuery || activeCategory !== 'all'
+              ? 'Try adjusting your search or category filter.'
+              : 'Check back soon — new products are being added regularly!'}
+          </p>
+          {(searchQuery || activeCategory !== 'all') && (
             <button
-              onClick={() => { handleCategoryChange('all'); setMaxPrice(maxProductPrice); }}
-              className="mt-4 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white rounded-lg text-sm font-medium transition-colors"
+              onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+              className="mt-2 px-4 py-2 bg-gold-500 text-white text-sm font-medium rounded-lg hover:bg-gold-600 transition-colors"
             >
               Clear Filters
             </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            {paginatedProducts.map((product) => (
+          )}
+        </div>
+      )}
+
+      {/* Product grid */}
+      {!showSpinner && !isError && paginated.length > 0 && (
+        <>
+          <p className="text-navy-500 text-sm mb-4">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length} products
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {paginated.map(product => (
               <ProductCard key={String(product.id)} product={product} />
             ))}
           </div>
-        )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
-              className="px-3 py-2 rounded-lg border border-navy-200 text-navy-700 hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm transition-colors"
-            >
-              ← Prev
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
-              .reduce<(number | '...')[]>((acc, p, idx, arr) => {
-                if (idx > 0 && typeof arr[idx - 1] === 'number' && (p as number) - (arr[idx - 1] as number) > 1) {
-                  acc.push('...');
-                }
-                acc.push(p);
-                return acc;
-              }, [])
-              .map((p, idx) =>
-                p === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-navy-400">…</span>
-                ) : (
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p as number)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      safePage === p
-                        ? 'bg-gold-500 text-white'
-                        : 'border border-navy-200 text-navy-700 hover:bg-navy-50'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                )
-              )}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
-              className="px-3 py-2 rounded-lg border border-navy-200 text-navy-700 hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm transition-colors"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-navy-400">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === p
+                          ? 'bg-gold-500 text-white border border-gold-500'
+                          : 'border border-navy-200 text-navy-600 hover:bg-navy-50'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }

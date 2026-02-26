@@ -14,8 +14,6 @@ import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
-// No migration code necessary!
-
 actor {
   include MixinStorage();
 
@@ -134,12 +132,8 @@ actor {
     false;
   };
 
-  // Combined admin check: either via AccessControl or via active admin session
   func isAdmin(caller : Principal) : Bool {
-    if (hasAdminPermission(caller)) {
-      return true;
-    };
-    isSessionAdmin(caller);
+    hasAdminPermission(caller) or isSessionAdmin(caller);
   };
 
   func getPrincipalFromSession(sessionToken : Text) : ?Principal {

@@ -1,71 +1,39 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Products Page and Login Regressions (Version 117)",
+  "title": "Fix Rupee price decimal display and change 'Shop on Amazon' button to soft pink",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix the Products page regression where no products are displayed. Restore the ProductGrid component's ability to fetch products from the backend and render them in the filterable, paginated grid.",
+      "summary": "Fix Rupee price display formatting to show decimals correctly (e.g., Rs.1,399.00 instead of 139900) across all product display components",
       "acceptanceCriteria": [
-        "Navigating to the Products page renders the product grid with products fetched from the backend.",
-        "Category filters, price slider, and pagination controls function correctly.",
-        "Loading and error states are handled gracefully.",
-        "No console errors related to product fetching or rendering."
+        "All product prices display with 2 decimal places (e.g., Rs.1,399.00 instead of 139900)",
+        "The Rupee symbol (Rs. or ₹) is shown before the price on every product card",
+        "Price formatting is consistent across ProductGrid, product cards, and any other product display components",
+        "No other product data fields are affected by this change"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/ProductGrid.tsx",
           "operation": "modify",
-          "description": "Review and fix the product fetching logic in ProductGrid. Ensure the useProducts query hook is correctly invoked and that the component properly handles loading, error, and success states. Verify that the filter controls (category, price range) correctly trigger data refetching. Ensure pagination logic correctly slices the filtered product array. Check for any breaking changes in how the backend actor methods are called or how the data is transformed before rendering. Verify the component's usage instructions for any required components before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Review the useProducts and related product query hooks. Ensure the queryFn correctly calls actor.getAllProducts() and handles the response. Verify that the query is enabled only when the actor is available. Check for any issues with data transformation or caching that might prevent products from appearing. Ensure staleTime and cacheTime settings are appropriate. Verify the component's usage instructions for any required components before implementing."
-        },
-        {
-          "path": "frontend/src/pages/ProductsPage.tsx",
-          "operation": "modify",
-          "description": "Review the ProductsPage component to ensure it correctly renders the ProductGrid component and passes any required props. Verify that the page structure hasn't been inadvertently broken in Version 117. Ensure the component is properly memoized and doesn't have rendering issues. Verify the component's usage instructions for any required components before implementing."
+          "description": "Add a price formatting utility function (formatPrice) that divides integer paise values by 100 and formats them as Rs.X,XXX.XX with 2 decimal places. Apply this formatting to all price display locations within the ProductGrid component, including the product.price and product.mrp fields. Ensure the Rupee symbol (Rs.) appears before each formatted price. Update both the regular price display and any MRP/discount price displays to use this consistent formatting. Do not modify the underlying data structure or backend queries—only change how prices are rendered in the UI."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Fix the admin login regression where both custom username/password authentication and Internet Identity login are not working. Restore successful authentication, session persistence, and Admin Panel access.",
+      "summary": "Change 'Shop on Amazon' button color to soft pink with readable text and hover state",
       "acceptanceCriteria": [
-        "Admin can log in using a valid username and password via the custom auth flow.",
-        "Admin can log in using Internet Identity.",
-        "After successful login, the Admin Panel is accessible and the session persists across page refreshes.",
-        "Failed login attempts show appropriate error messages.",
-        "Logout clears the session correctly.",
-        "No console errors related to authentication or session management."
+        "Every 'Shop on Amazon' button across all product cards is styled with a soft pink background color",
+        "Button text remains legible against the soft pink background",
+        "A hover state is applied that slightly darkens or adjusts the pink shade for visual feedback",
+        "No other buttons or UI elements are inadvertently affected"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminLogin.tsx",
+          "path": "frontend/src/components/ProductGrid.tsx",
           "operation": "modify",
-          "description": "Review and fix the AdminLogin component's authentication flows. For custom auth: ensure the username/password form correctly calls the useBackendAuth login mutation and handles the returned session token. Verify password validation and error handling. For Internet Identity: ensure the II login button correctly invokes the useInternetIdentity login method and handles authentication state. Check that both flows properly update auth state and trigger navigation or modal closure on success. Verify that error messages are displayed for failed login attempts. Ensure the component follows the authorization component's frontend usage instructions for Internet Identity integration."
-        },
-        {
-          "path": "frontend/src/hooks/useBackendAuth.ts",
-          "operation": "modify",
-          "description": "Review the login, register, and logout mutations. Ensure the login mutation correctly calls actor.authenticateUser(username, password) and stores the returned session token using useAuth.setSession. Verify the logout mutation calls actor.logout(sessionToken) and clears local session state. Check for any issues with error handling, toast notifications, or query invalidation after auth state changes. Verify the component's usage instructions for any required components before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useAuth.ts",
-          "operation": "modify",
-          "description": "Review the Zustand auth store to ensure session token persistence, username storage, and expiry logic are working correctly. Verify that setSession correctly stores the token and expiry timestamp (24 hours from now). Ensure clearSession removes all auth data from both state and localStorage. Check that the store's persist middleware is correctly configured and that session data survives page refreshes. Verify the component's usage instructions for any required components before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPage.tsx",
-          "operation": "modify",
-          "description": "Review the AdminPage component's authentication gating logic. Ensure it correctly checks both custom auth (via useAuth) and Internet Identity auth (via useInternetIdentity) to determine whether to show the login form or the admin panel. Verify that the admin role check (isCallerAdmin query) is correctly invoked for II users. Ensure the access-denied state is shown only for authenticated non-admin users. Check that the component re-renders appropriately when auth state changes. Ensure the component follows the authorization component's frontend usage instructions for role-based access control."
-        },
-        {
-          "path": "frontend/src/components/AdminPanel.tsx",
-          "operation": "modify",
-          "description": "Review the AdminPanel component to ensure logout functionality works for both custom auth and Internet Identity. Verify that the logout button correctly calls the appropriate logout method based on the active auth mechanism. Ensure that after logout, the user is redirected to the login view and all cached data is cleared. Check that the tabbed navigation and product management components are correctly wired and accessible. Verify the component's usage instructions for any required components before implementing."
+          "description": "Update the 'Shop on Amazon' button styling to use a soft pink background color (e.g., bg-pink-300 or a similar Tailwind soft pink utility class). Ensure the button text color provides sufficient contrast for readability (e.g., text-gray-800 or text-pink-900). Add a hover state that slightly darkens the pink shade (e.g., hover:bg-pink-400). Verify that only the 'Shop on Amazon' button is affected and that no other UI elements inadvertently change color. Test the button across all product cards to ensure consistent styling."
         }
       ]
     }

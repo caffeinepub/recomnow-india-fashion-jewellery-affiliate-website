@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { Product, ProductInput, UserProfile } from '../backend';
 
 export function useGetAllProducts() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
 
   return useQuery<Product[]>({
     queryKey: ['products'],
@@ -12,13 +12,13 @@ export function useGetAllProducts() {
       const result = await actor.getAllProducts();
       return result;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !actorFetching,
     staleTime: 30_000,
   });
 }
 
 export function useGetFeaturedProducts() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
 
   return useQuery<Product[]>({
     queryKey: ['featuredProducts'],
@@ -26,9 +26,65 @@ export function useGetFeaturedProducts() {
       if (!actor) return [];
       return actor.getFeaturedProducts();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !actorFetching,
     staleTime: 30_000,
   });
+}
+
+export function useIsCallerAdmin() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['isCallerAdmin'],
+    queryFn: async ({ signal }) => {
+      if (!actor) return false;
+
+      // Race the backend call against an 8-second timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        const id = setTimeout(() => {
+          reject(new Error('Admin verification timed out. Please try again.'));
+        }, 8000);
+        // Clean up the timer if the query is cancelled
+        signal?.addEventListener('abort', () => clearTimeout(id));
+      });
+
+      try {
+        const result = await Promise.race([actor.isCallerAdmin(), timeoutPromise]);
+        return result;
+      } catch (err) {
+        // Re-throw so React Query marks this as an error state
+        throw err;
+      }
+    },
+    enabled: !!actor && !actorFetching,
+    staleTime: 30_000,
+    retry: false, // Don't auto-retry — let the user decide
+    gcTime: 0,    // Don't cache stale admin status
+  });
+}
+
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const query = useQuery<UserProfile | null>({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getCallerUserProfile();
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
 }
 
 export function useAddProduct() {
@@ -79,26 +135,6 @@ export function useDeleteProduct() {
   });
 }
 
-export function useGetCallerUserProfile() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  const query = useQuery<UserProfile | null>({
-    queryKey: ['currentUserProfile'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
-
-  return {
-    ...query,
-    isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
-  };
-}
-
 export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -111,20 +147,5 @@ export function useSaveCallerUserProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
-  });
-}
-
-export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
-    retry: false,
-    staleTime: 60_000,
   });
 }

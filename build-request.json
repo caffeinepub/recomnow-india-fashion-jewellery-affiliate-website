@@ -1,60 +1,58 @@
 {
   "kind": "build_request",
-  "title": "Fix Products Page and Login Not Working (Version 117 Regression)",
+  "title": "Fix Rupee price decimal display and change 'Shop on Amazon' button to soft pink",
   "projectName": "RecomNow India",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
-      "target": "both",
+      "text": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Products page is not showing anything."
+          "Amount of every products used in Rupee Symbol without any Decimal. i.e. Rs.1399.00 is showing 139900. Use decimals for Rupees on every product."
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to the Products page renders the product grid with products fetched from the backend.",
-        "Category filters, price slider, and pagination controls function correctly.",
-        "Loading and error states are handled gracefully.",
-        "No console errors related to product fetching or rendering."
+        "All product prices display with 2 decimal places (e.g., Rs.1,399.00 instead of 139900)",
+        "The Rupee symbol (Rs. or ₹) is shown before the price on every product card",
+        "Price formatting is consistent across ProductGrid, product cards, and any other product display components",
+        "No other product data fields are affected by this change"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
-      "target": "both",
+      "text": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Login facility also not working."
+          "\"Shop on Amazon\" button change color to soft Pink for every product."
         ]
       },
       "acceptanceCriteria": [
-        "Admin can log in using a valid username and password via the custom auth flow.",
-        "Admin can log in using Internet Identity.",
-        "After successful login, the Admin Panel is accessible and the session persists across page refreshes.",
-        "Failed login attempts show appropriate error messages.",
-        "Logout clears the session correctly.",
-        "No console errors related to authentication or session management."
+        "Every 'Shop on Amazon' button across all product cards is styled with a soft pink background color",
+        "Button text remains legible against the soft pink background",
+        "A hover state is applied that slightly darkens or adjusts the pink shade for visual feedback",
+        "No other buttons or UI elements are inadvertently affected"
       ]
     }
   ],
   "constraints": [
-    "Do not remove or alter Google Analytics integration added in Version 117.",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Preserve existing backend data schema and all stored product/user/session data."
+    "Do not change any backend data storage or schema — price values are stored as-is; only the frontend display formatting should change",
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Keep all other product card styles, layout, and functionality unchanged"
   ],
   "nonGoals": [
-    "Adding new features or pages.",
-    "Redesigning the UI or changing the visual theme.",
-    "Modifying blog, newsletter, or site pages management placeholders.",
-    "Performance optimizations beyond fixing the regressions."
+    "Changing how prices are stored in the backend",
+    "Modifying any other button colors or UI elements beyond 'Shop on Amazon'",
+    "Adding new product fields or changing product data structure",
+    "Modifying admin panel product management forms"
   ],
   "imageRequirements": {
     "required": [],

@@ -6,7 +6,12 @@ import { Input } from './ui/input';
 import { toast } from 'sonner';
 import TrustBadges from './TrustBadges';
 
-const Footer = memo(() => {
+interface FooterProps {
+  onNavigate?: (path: string) => void;
+  onOpenPage?: (pageKey: string) => void;
+}
+
+const Footer = memo(({ onNavigate, onOpenPage }: FooterProps) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -16,7 +21,7 @@ const Footer = memo(() => {
       toast.error('Please enter a valid email address');
       return;
     }
-    
+
     setIsSubmitting(true);
     // Newsletter functionality removed
     toast.info('Newsletter feature is currently unavailable');
@@ -24,9 +29,26 @@ const Footer = memo(() => {
     setIsSubmitting(false);
   };
 
+  const navigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.history.pushState({}, '', path);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const currentYear = new Date().getFullYear();
-  const appIdentifier = typeof window !== 'undefined' 
-    ? encodeURIComponent(window.location.hostname) 
+  const appIdentifier = typeof window !== 'undefined'
+    ? encodeURIComponent(window.location.hostname)
     : 'recomnow-india';
 
   return (
@@ -48,20 +70,57 @@ const Footer = memo(() => {
             <h3 className="text-xl font-bold mb-4 text-blue-500">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#products" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
+                <button
+                  onClick={() => navigate('/')}
+                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate('/products')}
+                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                >
                   Products
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#blog" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
-                  Blog
-                </a>
+                <button
+                  onClick={() => scrollToSection('products')}
+                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                >
+                  Featured Products
+                </button>
               </li>
-              <li>
-                <a href="#about" className="text-blue-500 hover:text-gold-400 transition-colors font-medium">
-                  About Us
-                </a>
-              </li>
+              {onOpenPage && (
+                <>
+                  <li>
+                    <button
+                      onClick={() => onOpenPage('privacy')}
+                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                    >
+                      Privacy Policy
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => onOpenPage('terms')}
+                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                    >
+                      Terms of Service
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => onOpenPage('contact')}
+                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
+                    >
+                      Contact Us
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -82,7 +141,7 @@ const Footer = memo(() => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold whitespace-nowrap"
+                className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold whitespace-nowrap cursor-pointer"
               >
                 {isSubmitting ? 'Subscribing...' : 'Subscribe'}
               </Button>
@@ -91,9 +150,9 @@ const Footer = memo(() => {
         </div>
 
         <div className="border-t border-navy-700 pt-8 mb-6 pb-8">
-          <TrustBadges 
-            badges={['kolkata', 'amazon-associates', 'safe-checkout', 'money-back', 'ssl-secure']} 
-            layout="horizontal" 
+          <TrustBadges
+            badges={['kolkata', 'amazon-associates', 'safe-checkout', 'money-back', 'ssl-secure']}
+            layout="horizontal"
           />
         </div>
 
@@ -148,7 +207,7 @@ const Footer = memo(() => {
 
         <div className="mt-6 pt-6 border-t border-navy-700">
           <p className="text-xs text-navy-200 text-center leading-relaxed">
-            <strong className="text-navy-100">Affiliate Disclosure:</strong> As an Amazon Associate, Amazon RecomNow India may earn from qualifying purchases. 
+            <strong className="text-navy-100">Affiliate Disclosure:</strong> As an Amazon Associate, Amazon RecomNow India may earn from qualifying purchases.
             We only recommend products we believe will add value to our readers.
           </p>
         </div>

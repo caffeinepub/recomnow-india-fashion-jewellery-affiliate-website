@@ -1,70 +1,128 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useAuth } from '../hooks/useAuth';
 import { useIsCallerAdmin } from '../hooks/useQueries';
+import { useActor } from '../hooks/useActor';
+import { useQueryClient } from '@tanstack/react-query';
 import AdminLogin from '../components/AdminLogin';
 import AdminPanel from '../components/AdminPanel';
+import Spinner from '../components/Spinner';
 
 export default function AdminPage() {
-  const { identity, isInitializing: iiInitializing } = useInternetIdentity();
-  const { sessionToken, isSessionValid } = useAuth();
-  const { data: isAdmin, isLoading: adminCheckLoading } = useIsCallerAdmin();
+  const { identity, loginStatus, clear } = useInternetIdentity();
+  const { sessionToken, isSessionValid, clearSession } = useAuth();
+  const { actor, isFetching: actorFetching } = useActor();
+  const { data: isAdmin, isLoading: adminCheckLoading, isError: adminCheckError, error: adminError, refetch } = useIsCallerAdmin();
+  const queryClient = useQueryClient();
 
   const isIIAuthenticated = !!identity;
   const isCustomAuthenticated = !!sessionToken && isSessionValid();
+  const isLoggingIn = loginStatus === 'logging-in';
 
-  // Show panel if:
-  // 1. Custom auth is active (session valid) - always allow
-  // 2. II auth is active and user is confirmed admin
-  const showPanel = isCustomAuthenticated || (isIIAuthenticated && isAdmin === true);
+  const actorReady = !!actor;
 
-  // Show access denied if II authenticated but not admin
-  const showAccessDenied = isIIAuthenticated && !isCustomAuthenticated && isAdmin === false && !adminCheckLoading;
+  // For custom auth: show panel as soon as session is valid (backend protects mutations)
+  // For II auth: show panel when isAdmin is confirmed true
+  const iiShowPanel = isIIAuthenticated && isAdmin === true;
+  const showPanel = isCustomAuthenticated || iiShowPanel;
 
-  // Show loading while II is initializing or admin check is in progress for II users
-  const showLoading = iiInitializing || (isIIAuthenticated && !isCustomAuthenticated && adminCheckLoading);
+  // Loading while: II login in progress, actor still fetching for II user, or admin check running
+  const showLoading =
+    isLoggingIn ||
+    (isIIAuthenticated && !isCustomAuthenticated && actorFetching) ||
+    (isIIAuthenticated && !isCustomAuthenticated && actorReady && adminCheckLoading);
 
-  const handleLoginSuccess = () => {
-    // The auth state will update reactively via Zustand/useInternetIdentity
-    // No manual state needed - the component will re-render with updated auth state
+  // Error state: admin check timed out or failed
+  const showAdminCheckError =
+    isIIAuthenticated &&
+    !isCustomAuthenticated &&
+    !showPanel &&
+    !showLoading &&
+    adminCheckError;
+
+  // Access denied: II authenticated, actor ready, admin check done, not admin
+  const showAccessDenied =
+    isIIAuthenticated &&
+    !isCustomAuthenticated &&
+    !showPanel &&
+    !showLoading &&
+    !showAdminCheckError &&
+    actorReady &&
+    isAdmin === false;
+
+  const showLogin = !showPanel && !showLoading && !showAccessDenied && !showAdminCheckError;
+
+  const handleRetry = () => {
+    queryClient.removeQueries({ queryKey: ['isCallerAdmin'] });
+    refetch();
   };
 
-  if (showLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Verifying access...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleLogoutAndRetry = async () => {
+    await clear();
+    clearSession();
+    queryClient.clear();
+  };
 
-  if (showAccessDenied) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-900 px-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🚫</span>
-          </div>
-          <h2 className="text-2xl font-bold text-navy-900 mb-2">Access Denied</h2>
-          <p className="text-navy-600 mb-6">
-            Your Internet Identity does not have admin privileges. Please use admin credentials to log in.
+  return (
+    <div className="min-h-screen bg-navy-50">
+      {showLoading && (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <Spinner />
+          <p className="text-navy-600 text-sm">
+            {isLoggingIn ? 'Connecting to Internet Identity…' : 'Verifying admin access…'}
           </p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="px-6 py-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            Go Home
-          </button>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (showPanel) {
-    return <AdminPanel />;
-  }
+      {showAdminCheckError && (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-navy-900 mb-2">Verification Failed</h2>
+            <p className="text-navy-600 text-sm mb-6">
+              {adminError instanceof Error
+                ? adminError.message
+                : 'Unable to verify admin access. Please try again.'}
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleRetry}
+                className="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Retry Verification
+              </button>
+              <button
+                onClick={handleLogoutAndRetry}
+                className="w-full py-2.5 bg-navy-100 hover:bg-navy-200 text-navy-700 font-semibold rounded-lg transition-colors"
+              >
+                Sign Out &amp; Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-  return <AdminLogin onSuccess={handleLoginSuccess} />;
+      {showAccessDenied && (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+            <div className="text-4xl mb-4">🔒</div>
+            <h2 className="text-xl font-bold text-navy-900 mb-2">Access Denied</h2>
+            <p className="text-navy-600 text-sm mb-6">
+              Your account does not have admin privileges. Please contact the site administrator.
+            </p>
+            <button
+              onClick={handleLogoutAndRetry}
+              className="w-full py-2.5 bg-navy-100 hover:bg-navy-200 text-navy-700 font-semibold rounded-lg transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showPanel && <AdminPanel />}
+
+      {showLogin && <AdminLogin onSuccess={() => {}} />}
+    </div>
+  );
 }

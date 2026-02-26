@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-products-page-regression-introduced-in-version-117-where-no-products-are-displayed-the-productgrid-component-must-correctly-fetch-products-from-the-backend-and-render-them-in-the-filterable-paginated-grid-as-before",
-      "featureTitle": "Fix the Products page regression introduced in Version 117 where no products are displayed. The ProductGrid component must correctly fetch products from the backend and render them in the filterable, paginated grid as before.",
+      "featureId": "feature-fix-the-rupee-price-display-in-the-productgrid-component-and-any-other-product-card-listing-components-so-that-prices-are-correctly-formatted-with-decimals-prices-stored-as-integers-e-g-139900-representing-paise-must-be-divided-by-100-and-displayed-with-2-decimal-places-using-the-indian-rupee-symbol-e-g-rs-1-399-00-ensure-this-fix-is-applied-consistently-wherever-product-prices-are-rendered-across-the-application",
+      "featureTitle": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
       "files": [
-        "frontend/src/components/ProductGrid.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ProductsPage.tsx"
+        "frontend/src/components/ProductGrid.tsx"
       ],
       "components": [
         "authorization@3.0.0",
@@ -25,14 +23,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-the-admin-login-regression-introduced-in-version-117-where-the-login-facility-is-not-working-both-custom-username-password-authentication-and-internet-identity-login-in-the-adminlogin-component-must-complete-successfully-persist-session-state-and-grant-access-to-the-admin-panel",
-      "featureTitle": "Fix the admin login regression introduced in Version 117 where the login facility is not working. Both custom username/password authentication and Internet Identity login in the AdminLogin component must complete successfully, persist session state, and grant access to the Admin Panel.",
+      "featureId": "feature-change-the-shop-on-amazon-button-color-to-soft-pink-for-every-product-card-in-the-productgrid-component-and-any-other-location-where-this-button-appears-use-a-soft-light-pink-color-e-g-bg-pink-300-or-similar-tailwind-soft-pink-shade-for-the-button-background-ensuring-readable-text-contrast-and-hover-state-consistency",
+      "featureTitle": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
       "files": [
-        "frontend/src/components/AdminLogin.tsx",
-        "frontend/src/components/AdminPanel.tsx",
-        "frontend/src/hooks/useAuth.ts",
-        "frontend/src/hooks/useBackendAuth.ts",
-        "frontend/src/pages/AdminPage.tsx"
+        "frontend/src/components/ProductGrid.tsx"
       ],
       "components": [
         "authorization@3.0.0",
