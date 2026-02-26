@@ -105,6 +105,13 @@
   }
 }
 
+/* font-display: swap for any custom @font-face declarations to prevent FOIT */
+@font-face {
+  font-family: 'system-ui-fallback';
+  src: local('system-ui');
+  font-display: swap;
+}
+
 @layer utilities {
   .card-hover-effect {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

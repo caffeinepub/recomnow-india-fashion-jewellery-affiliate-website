@@ -13,40 +13,35 @@ const TrustBadges = memo(({ badges, className = '', layout = 'horizontal' }: Tru
       alt: 'Kolkata Based / কলকাতা ভিত্তিক',
       width: 150,
       height: 60,
-      maxHeight: '60px',
     },
     'amazon-associates': {
       src: '/assets/image-8.png',
       alt: 'Amazon Associates Partner / Amazon অ্যাসোসিয়েটস পার্টনার',
       width: 200,
       height: 80,
-      maxHeight: '80px',
     },
     'safe-checkout': {
       src: '/assets/image-9.png',
       alt: 'Safe & Secure Checkout / নিরাপদ ও সুরক্ষিত চেকআউট',
       width: 200,
       height: 80,
-      maxHeight: '80px',
     },
     'money-back': {
       src: '/assets/image-10.png',
       alt: 'Money Back 100% Guaranteed / ১০০% টাকা ফেরত গ্যারান্টি',
       width: 200,
       height: 80,
-      maxHeight: '80px',
     },
     'ssl-secure': {
       src: '/assets/image-11.png',
       alt: '100% Secure Transactions SSL Secure / ১০০% সুরক্ষিত লেনদেন SSL সিকিউর',
       width: 200,
       height: 80,
-      maxHeight: '80px',
     },
   };
 
-  const layoutClass = layout === 'vertical' 
-    ? 'flex flex-col gap-4 items-center' 
+  const layoutClass = layout === 'vertical'
+    ? 'flex flex-col gap-4 items-center'
     : 'flex flex-row flex-wrap gap-4 items-center justify-center';
 
   return (
@@ -54,19 +49,21 @@ const TrustBadges = memo(({ badges, className = '', layout = 'horizontal' }: Tru
       {badges.map((badge) => {
         const config = badgeConfig[badge];
         return (
-          <div 
-            key={badge} 
-            role="listitem" 
+          <div
+            key={badge}
+            role="listitem"
             className="flex-shrink-0 flex items-center justify-center"
+            style={{ width: config.width, height: config.height }}
           >
+            {/* Explicit width/height attributes prevent CLS; loading="lazy" for below-fold badges */}
             <img
               src={config.src}
               alt={config.alt}
               width={config.width}
               height={config.height}
               className="w-auto max-w-full h-auto object-contain"
-              style={{ maxHeight: config.maxHeight }}
               loading="lazy"
+              decoding="async"
             />
           </div>
         );

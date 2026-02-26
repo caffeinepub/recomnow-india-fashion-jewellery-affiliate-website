@@ -30,21 +30,39 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Use terser for aggressive JS minification
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
         passes: 2,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        // Remove dead code
+        dead_code: true,
+        // Inline small functions
+        inline: 2,
+        // Collapse variable declarations
+        collapse_vars: true,
+        // Reduce sequences
+        sequences: true,
       },
-      mangle: true,
+      mangle: {
+        // Mangle top-level names for maximum compression
+        toplevel: true,
+        // Safari 10 compatibility
+        safari10: true,
+      },
       format: {
+        // Strip all comments from output
         comments: false,
       },
     },
+    // Use lightningcss for fast, aggressive CSS minification
     cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
+        // Manual chunk splitting for optimal long-term caching
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
           'query-vendor': ['@tanstack/react-query'],
@@ -60,7 +78,6 @@ export default defineConfig({
             '@radix-ui/react-switch',
             '@radix-ui/react-separator',
             '@radix-ui/react-slider',
-            '@radix-ui/react-sheet',
           ],
           'icp-vendor': [
             '@dfinity/agent',
@@ -70,8 +87,9 @@ export default defineConfig({
             '@dfinity/candid',
           ],
         },
+        // Hash-based filenames for cache busting
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
+          const info = assetInfo.name?.split('.') ?? [];
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp|avif/i.test(ext)) {
             return `assets/images/[name]-[hash][extname]`;

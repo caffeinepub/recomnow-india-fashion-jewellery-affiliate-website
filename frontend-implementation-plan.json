@@ -1,39 +1,176 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Rupee price decimal display and change 'Shop on Amazon' button to soft pink",
+  "title": "Frontend Performance Optimization for PageSpeed 90+",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Fix Rupee price display formatting to show decimals correctly (e.g., Rs.1,399.00 instead of 139900) across all product display components",
+      "id": "REQ-2",
+      "summary": "Implement WebP format with fallback, native lazy loading for below-fold images, and eager loading with fetchpriority for hero/LCP image",
       "acceptanceCriteria": [
-        "All product prices display with 2 decimal places (e.g., Rs.1,399.00 instead of 139900)",
-        "The Rupee symbol (Rs. or ₹) is shown before the price on every product card",
-        "Price formatting is consistent across ProductGrid, product cards, and any other product display components",
-        "No other product data fields are affected by this change"
+        "All images below the fold have loading=\"lazy\" attribute",
+        "Hero/LCP image has fetchpriority=\"high\" and no lazy loading",
+        "Images are served as WebP with fallback via <picture> element",
+        "OptimizedImage component reflects these changes"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/OptimizedImage.tsx",
+          "operation": "modify",
+          "description": "Update OptimizedImage component to use <picture> element with WebP source and PNG/JPEG fallback. Add support for fetchpriority prop (for hero images). Ensure loading=\"lazy\" is applied by default but can be overridden. Add width and height props pass-through to the <img> element for layout stability. Remove IntersectionObserver-based lazy loading logic in favor of native browser lazy loading."
+        },
+        {
+          "path": "frontend/src/components/Hero.tsx",
+          "operation": "modify",
+          "description": "Update the hero banner image to use the OptimizedImage component with fetchpriority=\"high\" and loading=\"eager\" (or omit loading attribute) to ensure the LCP image loads immediately. Reference the generated hero image at frontend/public/assets/generated/hero-banner.dim_1200x400.png with WebP conversion. Add explicit width and height attributes matching the image dimensions."
+        },
+        {
           "path": "frontend/src/components/ProductGrid.tsx",
           "operation": "modify",
-          "description": "Add a price formatting utility function (formatPrice) that divides integer paise values by 100 and formats them as Rs.X,XXX.XX with 2 decimal places. Apply this formatting to all price display locations within the ProductGrid component, including the product.price and product.mrp fields. Ensure the Rupee symbol (Rs.) appears before each formatted price. Update both the regular price display and any MRP/discount price displays to use this consistent formatting. Do not modify the underlying data structure or backend queries—only change how prices are rendered in the UI."
+          "description": "Update all product images rendered in ProductCard components to use the OptimizedImage component with loading=\"lazy\" for below-the-fold images. Ensure all product images have explicit width and height attributes. Convert image references to use WebP format with PNG fallback via the updated OptimizedImage component."
+        },
+        {
+          "path": "frontend/src/components/TrustBadges.tsx",
+          "operation": "modify",
+          "description": "Update all trust badge images to use the OptimizedImage component with loading=\"lazy\" and explicit width/height attributes. Reference the generated badge images at frontend/public/assets/generated/ (e.g., badge-amazon-verified.dim_200x80.png, badge-kolkata.dim_150x60.png, etc.) with WebP conversion via the updated OptimizedImage component."
+        },
+        {
+          "path": "frontend/src/components/admin/ProductManagement.tsx",
+          "operation": "modify",
+          "description": "Update any product preview images in the admin panel to use the OptimizedImage component with loading=\"lazy\" and explicit width/height attributes. Ensure WebP format with fallback is applied consistently across all image previews."
         }
       ]
     },
     {
-      "id": "REQ-2",
-      "summary": "Change 'Shop on Amazon' button color to soft pink with readable text and hover state",
+      "id": "REQ-3",
+      "summary": "Configure Vite build for fully minified HTML, CSS, and JavaScript with aggressive terser settings",
       "acceptanceCriteria": [
-        "Every 'Shop on Amazon' button across all product cards is styled with a soft pink background color",
-        "Button text remains legible against the soft pink background",
-        "A hover state is applied that slightly darkens or adjusts the pink shade for visual feedback",
-        "No other buttons or UI elements are inadvertently affected"
+        "Production build output JS files are minified and mangled",
+        "CSS output files are minified with no whitespace",
+        "HTML entry point is minified in the build output",
+        "Terser options in vite.config.ts include compress and mangle settings"
       ],
       "file_operations": [
         {
+          "path": "frontend/vite.config.ts",
+          "operation": "modify",
+          "description": "Update the build.minify configuration to use 'terser' and add build.terserOptions with aggressive settings: compress: { drop_console: true, drop_debugger: true, pure_funcs: ['console.log'], passes: 2 }, mangle: { toplevel: true, safari10: true }, format: { comments: false }. Ensure build.cssMinify is set to true (or use default which minifies CSS). Verify build.minify is not set to false. Add vite-plugin-html to minify the HTML entry point by installing it and configuring it in the plugins array with minify: true option."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Inline critical above-the-fold CSS in index.html head and defer non-essential JavaScript",
+      "acceptanceCriteria": [
+        "Critical CSS for above-the-fold content is inlined in <head>",
+        "Non-essential <script> tags in index.html have defer or async attribute",
+        "No render-blocking scripts appear before the closing </body> tag without defer/async",
+        "Page renders initial content without waiting for deferred scripts"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Extract critical above-the-fold CSS (header, hero section, initial layout styles from frontend/src/index.css and Tailwind base) and inline it directly into a <style> tag in the <head> section before any external stylesheets. Move the Google Analytics script tag to use defer attribute instead of async to prevent render blocking. Ensure any other third-party script tags (if present) use defer or async attributes. Verify the main application script module entry point does not need defer/async as ES modules are deferred by default."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add explicit width and height attributes to all image and video elements across frontend components",
+      "acceptanceCriteria": [
+        "All <img> tags have explicit width and height attributes",
+        "All video container elements have explicit dimensions",
+        "OptimizedImage component passes through width/height props to the rendered element",
+        "No image or video element lacks dimension attributes"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/OptimizedImage.tsx",
+          "operation": "modify",
+          "description": "Ensure the OptimizedImage component accepts width and height as required props and passes them through to both the <source> elements (via CSS or container) and the <img> element. Set aspect-ratio CSS property based on width/height to reserve layout space and prevent CLS. Update TypeScript interface to require width and height props."
+        },
+        {
+          "path": "frontend/src/components/Hero.tsx",
+          "operation": "modify",
+          "description": "Add explicit width=\"1200\" height=\"400\" attributes to the hero image (matching the generated hero-banner.dim_1200x400.png dimensions). Ensure the OptimizedImage component receives and applies these dimensions to prevent layout shift during hero image loading."
+        },
+        {
           "path": "frontend/src/components/ProductGrid.tsx",
           "operation": "modify",
-          "description": "Update the 'Shop on Amazon' button styling to use a soft pink background color (e.g., bg-pink-300 or a similar Tailwind soft pink utility class). Ensure the button text color provides sufficient contrast for readability (e.g., text-gray-800 or text-pink-900). Add a hover state that slightly darkens the pink shade (e.g., hover:bg-pink-400). Verify that only the 'Shop on Amazon' button is affected and that no other UI elements inadvertently change color. Test the button across all product cards to ensure consistent styling."
+          "description": "Add explicit width and height attributes to all product images rendered in ProductCard components. Use consistent dimensions (e.g., width=\"400\" height=\"300\" for product thumbnails) to reserve layout space and eliminate CLS. Pass these dimensions to the OptimizedImage component."
+        },
+        {
+          "path": "frontend/src/components/TrustBadges.tsx",
+          "operation": "modify",
+          "description": "Add explicit width and height attributes to all trust badge images matching the generated asset dimensions (e.g., badge-amazon-verified.dim_200x80.png gets width=\"200\" height=\"80\", badge-kolkata.dim_150x60.png gets width=\"150\" height=\"60\"). Ensure all badges render with reserved layout space to prevent CLS."
+        },
+        {
+          "path": "frontend/src/components/admin/ProductManagement.tsx",
+          "operation": "modify",
+          "description": "Add explicit width and height attributes to any product preview images in the admin panel. Use consistent preview dimensions to reserve layout space and prevent CLS during image loading in the admin interface."
+        },
+        {
+          "path": "frontend/src/components/SocialProof.tsx",
+          "operation": "modify",
+          "description": "Audit the SocialProof component for any images or icons displayed in testimonials or the 'Recently Bought' ticker. Add explicit width and height attributes to all image elements to prevent layout shift. If using icon fonts or SVGs, ensure container dimensions are explicitly set."
+        },
+        {
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "modify",
+          "description": "Audit the Footer component for any logo, social media icons, or trust badge images. Add explicit width and height attributes to all image elements to prevent layout shift during footer rendering."
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Audit the Header component for the logo image (generated/recomnow-logo.dim_200x200.png). Add explicit width=\"200\" height=\"200\" attributes to the logo image to prevent layout shift during header rendering. Apply the OptimizedImage component with these dimensions."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Defer all third-party tracking scripts including Google Analytics until 3 seconds after window.load event",
+      "acceptanceCriteria": [
+        "Google Analytics and other third-party scripts are not loaded on initial page parse",
+        "delayedScripts.ts injects tracking scripts at least 3 seconds after window.load",
+        "No third-party scripts block the critical rendering path",
+        "The 3-second delay logic is correctly applied before script injection"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/delayedScripts.ts",
+          "operation": "modify",
+          "description": "Verify and update the delayedScripts utility to ensure it waits for the window 'load' event, then delays an additional 3000ms before injecting third-party scripts. Ensure the utility exports a function that accepts script URLs or inline script content and injects them dynamically after the delay. Add support for both external script URLs and inline script blocks."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Remove the inline Google Analytics initialization script from index.html. Do not load gtag.js or any Google Analytics scripts during initial page parse. The tracking initialization will be handled by the delayedScripts utility after the 3-second delay following window.load."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Import the delayedScripts utility and invoke it after React app initialization to load Google Analytics (gtag.js) and any other third-party tracking scripts. Pass the Google Analytics measurement ID and script URLs to the utility. Ensure the delay logic (3 seconds after window.load) is respected before script injection."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Apply font-display: swap to all web font declarations to prevent FOIT",
+      "acceptanceCriteria": [
+        "All @font-face rules in index.css include font-display: swap",
+        "Any Google Fonts URL in index.html includes &display=swap parameter",
+        "No web font loading causes invisible text during page load"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Audit all @font-face declarations in index.css and ensure every rule includes font-display: swap. If no custom @font-face rules exist, verify that system fonts or Google Fonts are configured correctly. Document any font-display: swap additions in comments."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Audit any Google Fonts <link> tags in the <head> section. If present, ensure the URL includes the &display=swap query parameter (e.g., https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap). If no Google Fonts links exist, verify that the app uses system fonts or fonts loaded via @font-face in index.css with font-display: swap."
         }
       ]
     }

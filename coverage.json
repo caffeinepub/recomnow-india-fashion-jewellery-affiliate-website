@@ -1,47 +1,117 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T10:38:32.475Z",
+  "generatedAt": "2026-02-26T11:42:43.940Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 6,
+    "implemented": 6,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
+        "id": "REQ-2",
+        "summary": "Update the OptimizedImage component and all other image tags across the frontend to use WebP format with PNG/JPEG fallback via <picture> elements. Implement native lazy loading (loading=\"lazy\") for all images below the fold. For the hero/LCP image in Hero.tsx, set fetchpriority=\"high\" and explicitly remove any lazy loading attribute so it loads eagerly.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProductGrid.tsx"
+          "frontend/src/components/OptimizedImage.tsx",
+          "frontend/src/components/Hero.tsx",
+          "frontend/src/components/ProductGrid.tsx",
+          "frontend/src/components/TrustBadges.tsx",
+          "frontend/src/components/admin/ProductManagement.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProductGrid.tsx"
+          "frontend/src/components/OptimizedImage.tsx",
+          "frontend/src/components/Hero.tsx",
+          "frontend/src/components/TrustBadges.tsx"
         ]
       },
       {
-        "id": "REQ-2",
-        "summary": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
+        "id": "REQ-3",
+        "summary": "Ensure the Vite build configuration in vite.config.ts is set to produce fully minified HTML, CSS, and JavaScript output. Verify terser minification options are enabled with aggressive settings (remove comments, collapse whitespace, mangle variable names). Confirm CSS minification is active in the build pipeline.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProductGrid.tsx"
+          "frontend/vite.config.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProductGrid.tsx"
+          "frontend/vite.config.ts"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "In frontend/index.html, extract critical above-the-fold CSS and inline it directly into a <style> tag in the <head>. For non-essential JavaScript (excluding the main app bundle), add defer or async attributes so they do not block the initial page render. Any script tags that are not required for first paint should use defer.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/index.html"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Audit all <img> tags and video containers across the frontend components (Hero.tsx, ProductGrid.tsx, ProductManagement.tsx, OptimizedImage.tsx, TrustBadges.tsx, etc.) and ensure every image and video element has explicit width and height attributes set. This reserves layout space during loading and eliminates Cumulative Layout Shift (CLS).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/OptimizedImage.tsx",
+          "frontend/src/components/Hero.tsx",
+          "frontend/src/components/ProductGrid.tsx",
+          "frontend/src/components/TrustBadges.tsx",
+          "frontend/src/components/admin/ProductManagement.tsx",
+          "frontend/src/components/SocialProof.tsx",
+          "frontend/src/components/Footer.tsx",
+          "frontend/src/components/Header.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/OptimizedImage.tsx",
+          "frontend/src/components/Hero.tsx",
+          "frontend/src/components/TrustBadges.tsx",
+          "frontend/src/components/Header.tsx"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Update or verify the existing delayedScripts utility (frontend/src/utils/delayedScripts.ts) to ensure all third-party tracking scripts (including Google Analytics in index.html) and heavy widgets are deferred until 3 seconds after the window.load event fires. Move any inline Google Analytics initialization in index.html to use this delayed loading mechanism.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/delayedScripts.ts",
+          "frontend/index.html",
+          "frontend/src/main.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/delayedScripts.ts",
+          "frontend/index.html"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Ensure all @font-face declarations and Google Fonts imports in frontend/src/index.css and frontend/index.html include font-display: swap so that fallback text is shown immediately while web fonts are loading, preventing invisible text (FOIT).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/index.html"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/ProductGrid.tsx",
+    "frontend/index.html",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/components/Hero.tsx",
+    "frontend/src/components/OptimizedImage.tsx",
+    "frontend/src/components/TrustBadges.tsx",
+    "frontend/src/index.css",
+    "frontend/src/utils/delayedScripts.ts",
+    "frontend/vite.config.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

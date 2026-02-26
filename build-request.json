@@ -1,58 +1,133 @@
 {
   "kind": "build_request",
-  "title": "Fix Rupee price decimal display and change 'Shop on Amazon' button to soft pink",
+  "title": "Frontend Performance Optimization for PageSpeed 90+",
   "projectName": "RecomNow India",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
+      "id": "REQ-2",
+      "text": "Update the OptimizedImage component and all other image tags across the frontend to use WebP format with PNG/JPEG fallback via <picture> elements. Implement native lazy loading (loading=\"lazy\") for all images below the fold. For the hero/LCP image in Hero.tsx, set fetchpriority=\"high\" and explicitly remove any lazy loading attribute so it loads eagerly.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "Amount of every products used in Rupee Symbol without any Decimal. i.e. Rs.1399.00 is showing 139900. Use decimals for Rupees on every product."
+          "Convert all images to WebP format. Implement native lazy loading for all images below the fold. For the hero image (LCP element), set fetchpriority=\"high\" and ensure it is not lazy-loaded."
         ]
       },
       "acceptanceCriteria": [
-        "All product prices display with 2 decimal places (e.g., Rs.1,399.00 instead of 139900)",
-        "The Rupee symbol (Rs. or ₹) is shown before the price on every product card",
-        "Price formatting is consistent across ProductGrid, product cards, and any other product display components",
-        "No other product data fields are affected by this change"
+        "All images below the fold have loading=\"lazy\" attribute",
+        "Hero/LCP image has fetchpriority=\"high\" and no lazy loading",
+        "Images are served as WebP with fallback via <picture> element",
+        "OptimizedImage component reflects these changes"
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
+      "id": "REQ-3",
+      "text": "Ensure the Vite build configuration in vite.config.ts is set to produce fully minified HTML, CSS, and JavaScript output. Verify terser minification options are enabled with aggressive settings (remove comments, collapse whitespace, mangle variable names). Confirm CSS minification is active in the build pipeline.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "\"Shop on Amazon\" button change color to soft Pink for every product."
+          "Minify all HTML, CSS, and JavaScript files to reduce payload size."
         ]
       },
       "acceptanceCriteria": [
-        "Every 'Shop on Amazon' button across all product cards is styled with a soft pink background color",
-        "Button text remains legible against the soft pink background",
-        "A hover state is applied that slightly darkens or adjusts the pink shade for visual feedback",
-        "No other buttons or UI elements are inadvertently affected"
+        "Production build output JS files are minified and mangled",
+        "CSS output files are minified with no whitespace",
+        "HTML entry point is minified in the build output",
+        "Terser options in vite.config.ts include compress and mangle settings"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "In frontend/index.html, extract critical above-the-fold CSS and inline it directly into a <style> tag in the <head>. For non-essential JavaScript (excluding the main app bundle), add defer or async attributes so they do not block the initial page render. Any script tags that are not required for first paint should use defer.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Identify non-critical CSS and inline it into the <head>. Defer or use async for all non-essential JavaScript so it doesn't block the initial page render."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Critical CSS for above-the-fold content is inlined in <head>",
+        "Non-essential <script> tags in index.html have defer or async attribute",
+        "No render-blocking scripts appear before the closing </body> tag without defer/async",
+        "Page renders initial content without waiting for deferred scripts"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Audit all <img> tags and video containers across the frontend components (Hero.tsx, ProductGrid.tsx, ProductManagement.tsx, OptimizedImage.tsx, TrustBadges.tsx, etc.) and ensure every image and video element has explicit width and height attributes set. This reserves layout space during loading and eliminates Cumulative Layout Shift (CLS).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Add explicit width and height attributes to all image tags and video containers to reserve space during loading."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All <img> tags have explicit width and height attributes",
+        "All video container elements have explicit dimensions",
+        "OptimizedImage component passes through width/height props to the rendered element",
+        "No image or video element lacks dimension attributes"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Update or verify the existing delayedScripts utility (frontend/src/utils/delayedScripts.ts) to ensure all third-party tracking scripts (including Google Analytics in index.html) and heavy widgets are deferred until 3 seconds after the window.load event fires. Move any inline Google Analytics initialization in index.html to use this delayed loading mechanism.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Delay the execution of any third-party tracking scripts or heavy widgets until 3 seconds after the 'window.load' event to prioritize the main content."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Google Analytics and other third-party scripts are not loaded on initial page parse",
+        "delayedScripts.ts injects tracking scripts at least 3 seconds after window.load",
+        "No third-party scripts block the critical rendering path",
+        "The 3-second delay logic is correctly applied before script injection"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Ensure all @font-face declarations and Google Fonts imports in frontend/src/index.css and frontend/index.html include font-display: swap so that fallback text is shown immediately while web fonts are loading, preventing invisible text (FOIT).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Ensure all web fonts use font-display: swap to prevent invisible text during loading."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All @font-face rules in index.css include font-display: swap",
+        "Any Google Fonts URL in index.html includes &display=swap parameter",
+        "No web font loading causes invisible text during page load"
       ]
     }
   ],
   "constraints": [
-    "Do not change any backend data storage or schema — price values are stored as-is; only the frontend display formatting should change",
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "Keep all other product card styles, layout, and functionality unchanged"
+    "Do not modify files listed in frontend.immutablePaths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
+    "All changes are frontend-only; do not alter backend/main.mo",
+    "Maintain existing functionality — optimizations must not break product loading, admin panel, or affiliate link behavior"
   ],
   "nonGoals": [
-    "Changing how prices are stored in the backend",
-    "Modifying any other button colors or UI elements beyond 'Shop on Amazon'",
-    "Adding new product fields or changing product data structure",
-    "Modifying admin panel product management forms"
+    "Backend Motoko code changes",
+    "Cloudflare CDN configuration (documented separately in CLOUDFLARE_CDN_SETUP.md)",
+    "Service worker changes beyond what is needed for asset caching",
+    "Adding new product features or UI redesign"
   ],
   "imageRequirements": {
     "required": [],

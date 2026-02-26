@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useGetAllProducts } from '../hooks/useQueries';
 import { useActor } from '../hooks/useActor';
-import type { Product, ProductCategory, FashionCategory, JewelleryCategory } from '../backend';
+import type { Product } from '../backend';
 import OptimizedImage from './OptimizedImage';
 import Spinner from './Spinner';
 
@@ -123,7 +123,7 @@ function ProductCard({ product }: ProductCardProps) {
 
 export default function ProductGrid() {
   const { isFetching: actorFetching } = useActor();
-  const { data: products, isLoading, isError, error } = useGetAllProducts();
+  const { data: products, isLoading, isError, error, refetch } = useGetAllProducts();
 
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -211,12 +211,18 @@ export default function ProductGrid() {
 
       {/* Error state */}
       {!showSpinner && isError && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="text-4xl">⚠️</div>
-          <p className="text-navy-700 font-semibold">Failed to load products</p>
+          <p className="text-navy-700 font-semibold text-lg">Failed to load products</p>
           <p className="text-navy-500 text-sm text-center max-w-sm">
-            {error instanceof Error ? error.message : 'An unexpected error occurred. Please refresh the page.'}
+            {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
           </p>
+          <button
+            onClick={() => refetch()}
+            className="mt-2 px-5 py-2 bg-gold-500 text-white text-sm font-semibold rounded-lg hover:bg-gold-600 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       )}
 

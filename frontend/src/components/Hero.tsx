@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import TrustBadges from './TrustBadges';
+import OptimizedImage from './OptimizedImage';
 
 const Hero = memo(() => {
   const scrollToProducts = () => {
@@ -9,18 +10,25 @@ const Hero = memo(() => {
     if (productsSection) {
       productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      // Fallback: scroll down past the hero
       window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
     }
   };
 
   return (
     <section className="relative w-full overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-700">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-20"
-        style={{ backgroundImage: 'url(/assets/generated/hero-banner.dim_1200x400.png)' }}
-        aria-hidden="true"
-      />
+      {/* Hero LCP image: eager loading, high fetchpriority, explicit dimensions for CLS prevention */}
+      <div className="absolute inset-0 opacity-20" aria-hidden="true">
+        <OptimizedImage
+          src="/assets/generated/hero-banner.dim_1200x400.png"
+          alt=""
+          width={1200}
+          height={400}
+          priority={true}
+          loading="eager"
+          className="w-full h-full object-cover"
+          sizes="100vw"
+        />
+      </div>
 
       <div className="relative container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center space-y-6">

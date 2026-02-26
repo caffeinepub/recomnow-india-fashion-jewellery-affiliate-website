@@ -30,15 +30,18 @@ const Header = memo(({ currentRoute = '/', onNavigate }: HeaderProps) => {
               onClick={(e) => handleNavigation(e, '/')}
               className="flex items-center gap-3 cursor-pointer"
             >
-              <OptimizedImage
-                src="/assets/generated/recomnow-logo.dim_200x200.png"
-                alt="RecomNow India - Your trusted fashion and jewellery guide"
-                width={50}
-                height={50}
-                className="rounded-full"
-                loading="eager"
-                priority={true}
-              />
+              {/* Logo: eager + priority to avoid LCP/CLS issues in header */}
+              <div style={{ width: 50, height: 50, flexShrink: 0 }}>
+                <OptimizedImage
+                  src="/assets/generated/recomnow-logo.dim_200x200.png"
+                  alt="RecomNow India - Your trusted fashion and jewellery guide"
+                  width={50}
+                  height={50}
+                  className="rounded-full"
+                  loading="eager"
+                  priority={true}
+                />
+              </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold text-navy-900">
                   RecomNow India

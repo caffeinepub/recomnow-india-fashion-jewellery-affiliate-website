@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+/**
+ * OptimizedImage component for Core Web Vitals optimization.
+ * - Uses native browser lazy loading (loading="lazy") for below-fold images
+ * - Hero/LCP images use loading="eager" + fetchpriority="high"
+ * - <picture> element with WebP source + PNG/JPEG fallback
+ * - Explicit width/height to prevent CLS (Cumulative Layout Shift)
+ * - aspect-ratio CSS for layout space reservation
+ */
 
 interface OptimizedImageProps {
   src: string;
@@ -6,7 +13,9 @@ interface OptimizedImageProps {
   className?: string;
   width?: number;
   height?: number;
+  /** Set to true for the hero/LCP image to apply fetchpriority="high" and loading="eager" */
   priority?: boolean;
+  /** Override loading attribute; defaults to "lazy" for non-priority, "eager" for priority */
   loading?: 'lazy' | 'eager';
   sizes?: string;
   onError?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
@@ -23,47 +32,24 @@ export default function OptimizedImage({
   sizes,
   onError,
 }: OptimizedImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
-  const [hasError, setHasError] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  // Determine loading strategy: priority images are always eager
+  const loadingAttr: 'lazy' | 'eager' = loading ?? (priority ? 'eager' : 'lazy');
 
-  // Enhanced Intersection Observer with optimized threshold for preloading
-  useEffect(() => {
-    if (priority || !imgRef.current) return;
+  // For external URLs, use as-is; for local PNG assets, generate WebP variant
+  const isExternalUrl = src.startsWith('http://') || src.startsWith('https://');
+  const webpSrc = !isExternalUrl && src.endsWith('.png') ? src.replace('.png', '.webp') : null;
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            observerRef.current?.disconnect();
-          }
-        });
-      },
-      {
-        rootMargin: '200px', // Preload images 200px before viewport entry
-        threshold: 0.01,
-      }
-    );
+  // Responsive sizes hint
+  const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
 
-    observerRef.current.observe(imgRef.current);
-
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [priority]);
-
-  const handleLoad = () => {
-    setIsLoaded(true);
-  };
+  // Inline aspect-ratio to reserve layout space and prevent CLS
+  const containerStyle: React.CSSProperties = width && height
+    ? { aspectRatio: `${width} / ${height}`, width: '100%' }
+    : {};
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    setHasError(true);
     const img = e.currentTarget;
-    
-    // Try fallback chain: WebP -> PNG
+    // Fallback chain: WebP → PNG
     if (img.src.includes('.webp')) {
       img.src = img.src.replace('.webp', '.png');
     } else if (onError) {
@@ -71,57 +57,35 @@ export default function OptimizedImage({
     }
   };
 
-  // Generate optimized sizes attribute for responsive images
-  const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
-
-  // For external URLs, use as-is; for local assets, generate responsive versions
-  const isExternalUrl = src.startsWith('http://') || src.startsWith('https://');
-
-  // Prefer WebP for local PNG assets
-  const webpSrc = !isExternalUrl && src.endsWith('.png') ? src.replace('.png', '.webp') : null;
-  const fallbackSrc = src;
-
-  // Determine loading attribute
-  const loadingAttr = loading || (priority ? 'eager' : 'lazy');
-
-  // For priority images, ensure they're visible immediately (no opacity transition)
-  const imageClassName = priority 
-    ? className 
-    : `${className} ${!isLoaded && isInView ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`;
-
-  // Inline aspect-ratio style for layout stability
-  const aspectRatioStyle = width && height ? { aspectRatio: `${width} / ${height}` } : {};
-
   return (
-    <picture>
-      {/* WebP format for good compression (most browsers) */}
-      {isInView && !hasError && webpSrc && (
+    <picture style={containerStyle}>
+      {/* WebP source for modern browsers */}
+      {webpSrc && (
         <source
           type="image/webp"
           srcSet={webpSrc}
           sizes={defaultSizes}
+          width={width}
+          height={height}
         />
       )}
-      
-      {/* Fallback to original format */}
+      {/* Fallback to original format (PNG/JPEG) */}
       <img
-        ref={imgRef}
-        src={isInView ? fallbackSrc : ''}
+        src={src}
         alt={alt}
         width={width}
         height={height}
         loading={loadingAttr}
-        decoding="async"
+        decoding={priority ? 'sync' : 'async'}
         fetchPriority={priority ? 'high' : 'auto'}
-        className={imageClassName}
-        onLoad={handleLoad}
+        className={className}
         onError={handleError}
-        style={{
-          ...aspectRatioStyle,
-          contentVisibility: priority ? 'visible' : 'auto',
-          containIntrinsicSize: width && height ? `${width}px ${height}px` : 'auto',
-        }}
         sizes={defaultSizes}
+        style={
+          width && height
+            ? { width: '100%', height: '100%', objectFit: 'cover' }
+            : undefined
+        }
       />
     </picture>
   );

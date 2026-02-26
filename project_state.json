@@ -1,26 +1,58 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce product listing app with Indian Rupee pricing and Amazon shopping integration.",
-  "architectural_notes": [],
-  "known_issues": [
-    "Rupee price amounts displaying without decimals (e.g., 139900 instead of 1399.00)"
+  "summary": "Website performance optimization project targeting Google PageSpeed score of 90+, implementing image optimization, code minification, render-blocking elimination, CLS fixes, script delay, and font performance improvements.",
+  "architectural_notes": [
+    "Performance target: Google PageSpeed score of 90+ (both mobile and desktop)"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-rupee-price-display-in-the-productgrid-component-and-any-other-product-card-listing-components-so-that-prices-are-correctly-formatted-with-decimals-prices-stored-as-integers-e-g-139900-representing-paise-must-be-divided-by-100-and-displayed-with-2-decimal-places-using-the-indian-rupee-symbol-e-g-rs-1-399-00-ensure-this-fix-is-applied-consistently-wherever-product-prices-are-rendered-across-the-application",
-      "title": "Fix the Rupee price display in the ProductGrid component (and any other product card/listing components) so that prices are correctly formatted with decimals. Prices stored as integers (e.g., 139900 representing paise) must be divided by 100 and displayed with 2 decimal places using the Indian Rupee symbol (e.g., Rs.1,399.00). Ensure this fix is applied consistently wherever product prices are rendered across the application.",
+      "id": "feature-update-the-optimizedimage-component-and-all-other-image-tags-across-the-frontend-to-use-webp-format-with-png-jpeg-fallback-via-picture-elements-implement-native-lazy-loading-loading-lazy-for-all-images-below-the-fold-for-the-hero-lcp-image-in-hero-tsx-set-fetchpriority-high-and-explicitly-remove-any-lazy-loading-attribute-so-it-loads-eagerly",
+      "title": "Update the OptimizedImage component and all other image tags across the frontend to use WebP format with PNG/JPEG fallback via <picture> elements. Implement native lazy loading (loading=\"lazy\") for all images below the fold. For the hero/LCP image in Hero.tsx, set fetchpriority=\"high\" and explicitly remove any lazy loading attribute so it loads eagerly.",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-change-the-shop-on-amazon-button-color-to-soft-pink-for-every-product-card-in-the-productgrid-component-and-any-other-location-where-this-button-appears-use-a-soft-light-pink-color-e-g-bg-pink-300-or-similar-tailwind-soft-pink-shade-for-the-button-background-ensuring-readable-text-contrast-and-hover-state-consistency",
-      "title": "Change the 'Shop on Amazon' button color to soft pink for every product card in the ProductGrid component and any other location where this button appears. Use a soft/light pink color (e.g., bg-pink-300 or similar Tailwind soft pink shade) for the button background, ensuring readable text contrast and hover state consistency.",
+      "id": "feature-ensure-the-vite-build-configuration-in-vite-config-ts-is-set-to-produce-fully-minified-html-css-and-javascript-output-verify-terser-minification-options-are-enabled-with-aggressive-settings-remove-comments-collapse-whitespace-mangle-variable-names-confirm-css-minification-is-active-in-the-build-pipeline",
+      "title": "Ensure the Vite build configuration in vite.config.ts is set to produce fully minified HTML, CSS, and JavaScript output. Verify terser minification options are enabled with aggressive settings (remove comments, collapse whitespace, mangle variable names). Confirm CSS minification is active in the build pipeline.",
       "reqIds": [
-        "REQ-2"
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-frontend-index-html-extract-critical-above-the-fold-css-and-inline-it-directly-into-a-style-tag-in-the-head-for-non-essential-javascript-excluding-the-main-app-bundle-add-defer-or-async-attributes-so-they-do-not-block-the-initial-page-render-any-script-tags-that-are-not-required-for-first-paint-should-use-defer",
+      "title": "In frontend/index.html, extract critical above-the-fold CSS and inline it directly into a <style> tag in the <head>. For non-essential JavaScript (excluding the main app bundle), add defer or async attributes so they do not block the initial page render. Any script tags that are not required for first paint should use defer.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-all-img-tags-and-video-containers-across-the-frontend-components-hero-tsx-productgrid-tsx-productmanagement-tsx-optimizedimage-tsx-trustbadges-tsx-etc-and-ensure-every-image-and-video-element-has-explicit-width-and-height-attributes-set-this-reserves-layout-space-during-loading-and-eliminates-cumulative-layout-shift-cls",
+      "title": "Audit all <img> tags and video containers across the frontend components (Hero.tsx, ProductGrid.tsx, ProductManagement.tsx, OptimizedImage.tsx, TrustBadges.tsx, etc.) and ensure every image and video element has explicit width and height attributes set. This reserves layout space during loading and eliminates Cumulative Layout Shift (CLS).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-or-verify-the-existing-delayedscripts-utility-frontend-src-utils-delayedscripts-ts-to-ensure-all-third-party-tracking-scripts-including-google-analytics-in-index-html-and-heavy-widgets-are-deferred-until-3-seconds-after-the-window-load-event-fires-move-any-inline-google-analytics-initialization-in-index-html-to-use-this-delayed-loading-mechanism",
+      "title": "Update or verify the existing delayedScripts utility (frontend/src/utils/delayedScripts.ts) to ensure all third-party tracking scripts (including Google Analytics in index.html) and heavy widgets are deferred until 3 seconds after the window.load event fires. Move any inline Google Analytics initialization in index.html to use this delayed loading mechanism.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-all-font-face-declarations-and-google-fonts-imports-in-frontend-src-index-css-and-frontend-index-html-include-font-display-swap-so-that-fallback-text-is-shown-immediately-while-web-fonts-are-loading-preventing-invisible-text-foit",
+      "title": "Ensure all @font-face declarations and Google Fonts imports in frontend/src/index.css and frontend/index.html include font-display: swap so that fallback text is shown immediately while web fonts are loading, preventing invisible text (FOIT).",
+      "reqIds": [
+        "REQ-7"
       ],
       "version": 1
     }
@@ -28,13 +60,37 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix Rupee price display to show correct decimal format (e.g., Rs.1399.00 instead of 139900) for all products",
+      "summary": "Convert all images to WebP format and implement lazy loading; set fetchpriority=high on hero/LCP image",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Change 'Shop on Amazon' button color to soft pink for every product",
+      "summary": "Minify all HTML, CSS, and JavaScript files",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Inline non-critical CSS and defer/async non-essential JavaScript to eliminate render-blocking",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add explicit width and height attributes to all images and video containers to fix CLS",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Delay third-party tracking scripts and heavy widgets until 3 seconds after window.load",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add font-display: swap to all web fonts to prevent invisible text during loading",
       "reqIds": [],
       "status": "pending"
     }

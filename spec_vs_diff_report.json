@@ -1,14 +1,81 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T10:38:32.472Z",
-  "summary": "Both REQ-1 and REQ-2 are implemented in the diff. The ProductGrid component now includes a formatPrice utility that divides paise by 100 and renders prices as ₹X,XXX.XX with 2 decimal places, and the 'Shop on Amazon' button is styled with bg-pink-300 hover:bg-pink-400 with dark pink text (text-pink-900) for readability.",
-  "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.95,
+  "generatedAt": "2026-02-26T11:42:43.936Z",
+  "summary": "The diff implements most of the requested performance optimization requirements. REQ-2, REQ-3, REQ-5, REQ-6, and REQ-7 are substantially implemented. REQ-4 (critical CSS inlining and defer/async scripts) is partially implemented — the critical CSS inline style tag is present in index.html, but there is no evidence of non-essential script tags having defer/async attributes added in index.html (the file is truncated). REQ-7 is partially addressed in index.css with a font-display: swap @font-face declaration, but there is no evidence of a Google Fonts URL with &display=swap in index.html. ProductGrid.tsx and ProductManagement.tsx are not shown in the diff, so explicit width/height audit for those components (REQ-5) cannot be fully confirmed.",
+  "missing_requirements": [
+    {
+      "requirement": "Non-essential script tags in index.html must have defer or async attributes; no render-blocking scripts before closing body tag without defer/async",
+      "reason": "The index.html diff is truncated and only shows the head section with critical CSS inlined. There is no visible evidence that non-essential script tags were given defer/async attributes.",
+      "evidence": [
+        "frontend/index.html"
+      ]
+    },
+    {
+      "requirement": "Any Google Fonts URL in index.html must include the &display=swap parameter",
+      "reason": "No Google Fonts link tag is visible in the index.html diff and no evidence of &display=swap being added to a Google Fonts URL. The index.css adds a font-display: swap @font-face rule but this covers only a local fallback font.",
+      "evidence": [
+        "frontend/index.html",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "requirement": "All img tags in ProductGrid.tsx and ProductManagement.tsx must have explicit width and height attributes",
+      "reason": "ProductGrid.tsx and ProductManagement.tsx are not included in the modified files list of the diff. The audit for explicit width/height on those components cannot be confirmed from the available diff.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "HTML entry point is minified in the build output",
+      "reason": "The vite.config.ts sets terser and lightningcss minification for JS and CSS, but there is no vite-plugin-html or equivalent configuration to minify the HTML entry point. No HTML minification plugin is added.",
+      "evidence": [
+        "frontend/vite.config.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Manual chunk splitting for Rollup output including react-vendor, query-vendor, ui-vendor, and icp-vendor chunks",
+      "reason": "The build request only asked for terser minification settings and CSS minification. The manual chunk splitting strategy was not requested in any requirement.",
+      "evidence": [
+        "frontend/vite.config.ts"
+      ]
+    },
+    {
+      "description": "Rollup treeshake configuration with moduleSideEffects and propertyReadSideEffects set to false",
+      "reason": "Aggressive treeshaking configuration was not mentioned in any requirement.",
+      "evidence": [
+        "frontend/vite.config.ts"
+      ]
+    },
+    {
+      "description": "Link rel=preload tags for hero-banner WebP and logo WebP assets with fetchpriority=high added to index.html head",
+      "reason": "Preload link tags for specific assets were not explicitly requested in any requirement.",
+      "evidence": [
+        "frontend/index.html"
+      ]
+    },
+    {
+      "description": "injectDelayedScript exported utility function for injecting arbitrary external scripts after a delay",
+      "reason": "REQ-6 only asked for deferring Google Analytics and heavy widgets. A generic public API for injecting arbitrary delayed scripts was not requested.",
+      "evidence": [
+        "frontend/src/utils/delayedScripts.ts"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/ProductGrid.tsx",
+    "frontend/index.html",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/components/Hero.tsx",
+    "frontend/src/components/OptimizedImage.tsx",
+    "frontend/src/components/TrustBadges.tsx",
+    "frontend/src/index.css",
+    "frontend/src/utils/delayedScripts.ts",
+    "frontend/vite.config.ts",
     "project_state.json"
   ]
 }

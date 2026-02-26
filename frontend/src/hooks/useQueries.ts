@@ -8,12 +8,14 @@ export function useGetAllProducts() {
   return useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       const result = await actor.getAllProducts();
-      return result;
+      return result ?? [];
     },
     enabled: !!actor && !actorFetching,
     staleTime: 30_000,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 }
 
@@ -23,11 +25,13 @@ export function useGetFeaturedProducts() {
   return useQuery<Product[]>({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      if (!actor) return [];
-      return actor.getFeaturedProducts();
+      if (!actor) throw new Error('Actor not available');
+      return (await actor.getFeaturedProducts()) ?? [];
     },
     enabled: !!actor && !actorFetching,
     staleTime: 30_000,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 }
 
@@ -146,6 +150,21 @@ export function useSaveCallerUserProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+export function useLogoutUser() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionToken: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.logout(sessionToken);
+    },
+    onSuccess: () => {
+      queryClient.clear();
     },
   });
 }
