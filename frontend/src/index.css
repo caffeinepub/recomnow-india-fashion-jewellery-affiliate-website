@@ -46,6 +46,32 @@
     --chart-3: oklch(0.55 0.20 145);
     --chart-4: oklch(0.65 0.20 70);
     --chart-5: oklch(0.50 0.25 25);
+
+    /* Gold palette */
+    --gold-50: oklch(0.98 0.02 80);
+    --gold-100: oklch(0.95 0.05 80);
+    --gold-200: oklch(0.90 0.08 75);
+    --gold-300: oklch(0.84 0.12 72);
+    --gold-400: oklch(0.78 0.16 68);
+    --gold-500: oklch(0.72 0.18 65);
+    --gold-600: oklch(0.62 0.18 58);
+    --gold-700: oklch(0.50 0.16 52);
+
+    /* Navy palette */
+    --navy-50: oklch(0.97 0.01 240);
+    --navy-100: oklch(0.93 0.02 240);
+    --navy-200: oklch(0.86 0.04 240);
+    --navy-300: oklch(0.76 0.06 240);
+    --navy-400: oklch(0.62 0.08 240);
+    --navy-500: oklch(0.50 0.10 240);
+    --navy-600: oklch(0.40 0.10 240);
+    --navy-700: oklch(0.32 0.08 240);
+    --navy-800: oklch(0.25 0.06 240);
+    --navy-900: oklch(0.18 0.04 240);
+
+    /* Hot pink */
+    --pink-hot: oklch(0.55 0.28 0);
+    --pink-hot-dark: oklch(0.45 0.28 0);
   }
 
   .dark {
@@ -89,6 +115,32 @@
     --chart-3: oklch(0.55 0.20 145);
     --chart-4: oklch(0.65 0.20 70);
     --chart-5: oklch(0.50 0.25 25);
+
+    /* Gold palette - same in dark */
+    --gold-50: oklch(0.98 0.02 80);
+    --gold-100: oklch(0.95 0.05 80);
+    --gold-200: oklch(0.90 0.08 75);
+    --gold-300: oklch(0.84 0.12 72);
+    --gold-400: oklch(0.78 0.16 68);
+    --gold-500: oklch(0.72 0.18 65);
+    --gold-600: oklch(0.62 0.18 58);
+    --gold-700: oklch(0.50 0.16 52);
+
+    /* Navy palette - same in dark */
+    --navy-50: oklch(0.97 0.01 240);
+    --navy-100: oklch(0.93 0.02 240);
+    --navy-200: oklch(0.86 0.04 240);
+    --navy-300: oklch(0.76 0.06 240);
+    --navy-400: oklch(0.62 0.08 240);
+    --navy-500: oklch(0.50 0.10 240);
+    --navy-600: oklch(0.40 0.10 240);
+    --navy-700: oklch(0.32 0.08 240);
+    --navy-800: oklch(0.25 0.06 240);
+    --navy-900: oklch(0.18 0.04 240);
+
+    /* Hot pink */
+    --pink-hot: oklch(0.55 0.28 0);
+    --pink-hot-dark: oklch(0.45 0.28 0);
   }
 }
 
@@ -120,18 +172,51 @@
   .card-hover-effect:hover {
     transform: translateY(-4px);
   }
+
+  /* Hot pink text utility */
+  .text-pink-hot {
+    color: oklch(var(--pink-hot));
+  }
+}
+
+@layer components {
+  /* Primary pink button */
+  .btn-pink {
+    background-color: oklch(var(--pink-hot));
+    color: white;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-pink:hover {
+    background-color: oklch(var(--pink-hot-dark));
+  }
+
+  /* Pink outline button */
+  .btn-pink-outline {
+    background-color: transparent;
+    color: oklch(var(--pink-hot));
+    border: 2px solid oklch(var(--pink-hot));
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .btn-pink-outline:hover {
+    background-color: oklch(var(--pink-hot));
+    color: white;
+  }
 }
 
 /* Custom styling for price range slider */
 .price-range-slider [role="slider"] {
-  background-color: #ec4899 !important;
-  border-color: #ec4899 !important;
+  background-color: oklch(var(--pink-hot)) !important;
+  border-color: oklch(var(--pink-hot)) !important;
 }
 
 .price-range-slider [data-orientation="horizontal"] {
-  background-color: #fce7f3 !important;
+  background-color: oklch(0.92 0.05 0) !important;
 }
 
 .price-range-slider [data-orientation="horizontal"] > span {
-  background-color: #ec4899 !important;
+  background-color: oklch(var(--pink-hot)) !important;
 }

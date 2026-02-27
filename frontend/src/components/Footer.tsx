@@ -1,221 +1,140 @@
-import { memo, useState } from 'react';
-import { MapPin, Heart } from 'lucide-react';
-import { SiFacebook, SiInstagram, SiX } from 'react-icons/si';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { toast } from 'sonner';
-import TrustBadges from './TrustBadges';
+import React, { useState } from 'react';
+import { Heart } from 'lucide-react';
+import { SiFacebook, SiInstagram, SiYoutube } from 'react-icons/si';
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
-  onOpenPage?: (pageKey: string) => void;
+  onOpenPage?: (page: string) => void;
 }
 
-const Footer = memo(({ onNavigate, onOpenPage }: FooterProps) => {
+export default function Footer({ onNavigate, onOpenPage }: FooterProps) {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+  const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    setIsSubmitting(true);
-    // Newsletter functionality removed
-    toast.info('Newsletter feature is currently unavailable');
-    setEmail('');
-    setIsSubmitting(false);
-  };
-
-  const navigate = (path: string) => {
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (email.trim()) {
+      setSubscribed(true);
+      setEmail('');
     }
   };
 
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const currentYear = new Date().getFullYear();
-  const appIdentifier = typeof window !== 'undefined'
-    ? encodeURIComponent(window.location.hostname)
-    : 'recomnow-india';
+  const appId = encodeURIComponent(typeof window !== 'undefined' ? window.location.hostname : 'recomnow');
 
   return (
     <footer className="bg-navy-900 text-white pt-12 pb-6">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4 text-blue-500">Amazon RecomNow India</h3>
-            <p className="text-blue-500 mb-4 leading-relaxed">
-              Your trusted guide to premium fashion, costume jewellery, and trendsetting accessories from Amazon.
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+          {/* Brand */}
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2 mb-3">
+              <img
+                src="/assets/generated/recomnow-logo.dim_200x200.png"
+                alt="RecomNow"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <span className="font-bold text-lg">RecomNow India</span>
+            </div>
+            <p className="text-white/60 text-sm leading-relaxed">
+              Your trusted source for curated fashion and jewellery deals from Amazon India.
             </p>
-            <div className="flex items-center gap-2 text-blue-500">
-              <MapPin className="h-4 w-4 text-gold-400" aria-hidden="true" />
-              <span className="text-sm font-medium">Based in Kolkata, India</span>
+            <div className="flex gap-3 mt-4">
+              <a href="#" aria-label="Facebook" className="text-white/60 hover:text-pink-hot transition-colors">
+                <SiFacebook className="w-5 h-5" />
+              </a>
+              <a href="#" aria-label="Instagram" className="text-white/60 hover:text-pink-hot transition-colors">
+                <SiInstagram className="w-5 h-5" />
+              </a>
+              <a href="#" aria-label="YouTube" className="text-white/60 hover:text-pink-hot transition-colors">
+                <SiYoutube className="w-5 h-5" />
+              </a>
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-blue-500">Quick Links</h3>
+            <h3 className="font-semibold text-white mb-3">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <button
-                  onClick={() => navigate('/')}
-                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                >
-                  Home
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigate('/products')}
-                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                >
-                  Products
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection('products')}
-                  className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                >
-                  Featured Products
-                </button>
-              </li>
-              {onOpenPage && (
-                <>
-                  <li>
-                    <button
-                      onClick={() => onOpenPage('privacy')}
-                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                    >
-                      Privacy Policy
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => onOpenPage('terms')}
-                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                    >
-                      Terms of Service
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => onOpenPage('contact')}
-                      className="text-blue-500 hover:text-gold-400 transition-colors font-medium cursor-pointer bg-transparent border-none p-0 text-left"
-                    >
-                      Contact Us
-                    </button>
-                  </li>
-                </>
-              )}
+              {[
+                { label: 'Home', action: () => onNavigate?.('/') },
+                { label: 'Products', action: () => onNavigate?.('/products') },
+                { label: 'Featured Deals', action: () => { onNavigate?.('/'); setTimeout(() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' }), 100); } },
+              ].map(link => (
+                <li key={link.label}>
+                  <button
+                    onClick={link.action}
+                    className="text-white/60 hover:text-pink-hot transition-colors text-sm"
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Legal */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-blue-500">Newsletter</h3>
-            <p className="text-blue-500 mb-4 text-sm">
-              Get the latest deals and fashion tips delivered to your inbox.
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white text-navy-900 border-gold-400 placeholder:text-navy-500 font-medium"
-                disabled={isSubmitting}
-              />
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800 font-bold whitespace-nowrap cursor-pointer"
-              >
-                {isSubmitting ? 'Subscribing...' : 'Subscribe'}
-              </Button>
-            </form>
+            <h3 className="font-semibold text-white mb-3">Legal</h3>
+            <ul className="space-y-2">
+              {[
+                { label: 'Privacy Policy', page: 'privacy' },
+                { label: 'Terms of Service', page: 'terms' },
+                { label: 'Contact Us', page: 'contact' },
+              ].map(link => (
+                <li key={link.label}>
+                  <button
+                    onClick={() => onOpenPage?.(link.page)}
+                    className="text-white/60 hover:text-pink-hot transition-colors text-sm"
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h3 className="font-semibold text-white mb-3">Stay Updated</h3>
+            <p className="text-white/60 text-sm mb-3">Get the latest deals delivered to your inbox.</p>
+            {subscribed ? (
+              <p className="text-pink-hot text-sm font-medium">✓ Thanks for subscribing!</p>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Your email address"
+                  className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-pink-hot"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="btn-pink px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  Subscribe
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
-        <div className="border-t border-navy-700 pt-8 mb-6 pb-8">
-          <TrustBadges
-            badges={['kolkata', 'amazon-associates', 'safe-checkout', 'money-back', 'ssl-secure']}
-            layout="horizontal"
-          />
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t border-navy-700 pt-6">
-          <div className="flex items-center gap-4">
+        <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-white/50">
+          <p>© {new Date().getFullYear()} RecomNow India. All rights reserved.</p>
+          <p className="flex items-center gap-1">
+            Built with <Heart className="w-3 h-3 text-pink-hot fill-pink-hot" /> using{' '}
             <a
-              href="https://facebook.com"
+              href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-navy-100 hover:text-gold-400 transition-colors"
-              aria-label="Follow us on Facebook"
+              className="text-pink-hot hover:underline"
             >
-              <SiFacebook className="h-5 w-5" />
+              caffeine.ai
             </a>
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-navy-100 hover:text-gold-400 transition-colors"
-              aria-label="Follow us on Instagram"
-            >
-              <SiInstagram className="h-5 w-5" />
-            </a>
-            <a
-              href="https://x.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-navy-100 hover:text-gold-400 transition-colors"
-              aria-label="Follow us on X (Twitter)"
-            >
-              <SiX className="h-5 w-5" />
-            </a>
-          </div>
-
-          <div className="text-center md:text-right">
-            <p className="text-sm text-navy-100 mb-2 font-medium">
-              © {currentYear} Amazon RecomNow India. All rights reserved.
-            </p>
-            <p className="text-xs text-navy-200 flex items-center justify-center md:justify-end gap-1">
-              Built with <Heart className="h-3 w-3 text-red-400 fill-red-400" aria-label="love" /> using{' '}
-              <a
-                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appIdentifier}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold-400 hover:text-gold-300 transition-colors font-semibold"
-              >
-                caffeine.ai
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-navy-700">
-          <p className="text-xs text-navy-200 text-center leading-relaxed">
-            <strong className="text-navy-100">Affiliate Disclosure:</strong> As an Amazon Associate, Amazon RecomNow India may earn from qualifying purchases.
-            We only recommend products we believe will add value to our readers.
           </p>
         </div>
       </div>
     </footer>
   );
-});
-
-Footer.displayName = 'Footer';
-
-export default Footer;
+}

@@ -335,7 +335,7 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  public query func getProductById(id : Nat) : async Product {
+  public query ({ caller }) func getProductById(id : Nat) : async Product {
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product not found") };
       case (?product) { product };
@@ -596,4 +596,3 @@ actor {
     OutCall.transform(input);
   };
 };
-

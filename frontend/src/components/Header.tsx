@@ -1,100 +1,99 @@
-import { memo } from 'react';
-import { Crown } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
+import React, { useState } from 'react';
+import { ShoppingBag, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
-  currentRoute?: string;
   onNavigate?: (path: string) => void;
+  currentPath?: string;
 }
 
-const Header = memo(({ currentRoute = '/', onNavigate }: HeaderProps) => {
-  const isActive = (path: string) => currentRoute === path;
+export default function Header({ onNavigate, currentPath = '/' }: HeaderProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
-    e.preventDefault();
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-  };
+  const navLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Products', path: '/products' },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-gold-300 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-sm">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              onClick={(e) => handleNavigation(e, '/')}
-              className="flex items-center gap-3 cursor-pointer"
-            >
-              {/* Logo: eager + priority to avoid LCP/CLS issues in header */}
-              <div style={{ width: 50, height: 50, flexShrink: 0 }}>
-                <OptimizedImage
-                  src="/assets/generated/recomnow-logo.dim_200x200.png"
-                  alt="RecomNow India - Your trusted fashion and jewellery guide"
-                  width={50}
-                  height={50}
-                  className="rounded-full"
-                  loading="eager"
-                  priority={true}
-                />
-              </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold text-navy-900">
-                  RecomNow India
-                </h1>
-                <p className="text-xs md:text-sm text-navy-700">
-                  Fashion, Jewellery & Accessories
-                </p>
-              </div>
-            </a>
-          </div>
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Logo */}
+        <button
+          onClick={() => onNavigate?.('/')}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/assets/generated/recomnow-logo.dim_200x200.png"
+            alt="RecomNow India"
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-full object-cover"
+            onError={e => {
+              (e.target as HTMLImageElement).src = '/assets/generated/recomnow-logo.dim_200x200.png';
+            }}
+          />
+          <span className="font-bold text-lg text-foreground hidden sm:block">RecomNow India</span>
+        </button>
 
-          <nav className="flex items-center gap-4">
-            <a
-              href="/"
-              onClick={(e) => handleNavigation(e, '/')}
-              className={`text-sm font-semibold transition-colors cursor-pointer ${
-                isActive('/')
-                  ? 'text-gold-700 border-b-2 border-gold-700'
-                  : 'text-navy-800 hover:text-gold-700'
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map(link => (
+            <button
+              key={link.path}
+              onClick={() => onNavigate?.(link.path)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentPath === link.path
+                  ? 'bg-pink-hot text-white'
+                  : 'text-foreground hover:bg-muted'
               }`}
             >
-              Home
-            </a>
-            <a
-              href="/products"
-              onClick={(e) => handleNavigation(e, '/products')}
-              className={`text-sm font-semibold transition-colors cursor-pointer ${
-                isActive('/products')
-                  ? 'text-gold-700 border-b-2 border-gold-700'
-                  : 'text-navy-800 hover:text-gold-700'
-              }`}
-            >
-              Products
-            </a>
-            <a
-              href="/admin"
-              onClick={(e) => handleNavigation(e, '/admin')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-sm transition-all shadow-md hover:shadow-lg cursor-pointer ${
-                isActive('/admin')
-                  ? 'bg-gold-600 text-white border-2 border-gold-700'
-                  : 'bg-gradient-to-r from-gold-500 to-gold-600 text-white hover:from-gold-600 hover:to-gold-700'
-              }`}
-            >
-              <Crown className="h-4 w-4" aria-hidden="true" />
-              Admin Panel
-            </a>
-          </nav>
-        </div>
+              {link.label}
+            </button>
+          ))}
+          <button
+            onClick={() => onNavigate?.('/products')}
+            className="ml-2 btn-pink px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-2"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Shop Now
+          </button>
+        </nav>
+
+        {/* Mobile menu toggle */}
+        <button
+          onClick={() => setMobileOpen(v => !v)}
+          className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
+
+      {/* Mobile nav */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+          {navLinks.map(link => (
+            <button
+              key={link.path}
+              onClick={() => { onNavigate?.(link.path); setMobileOpen(false); }}
+              className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentPath === link.path
+                  ? 'bg-pink-hot text-white'
+                  : 'text-foreground hover:bg-muted'
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+          <button
+            onClick={() => { onNavigate?.('/products'); setMobileOpen(false); }}
+            className="w-full btn-pink px-4 py-2 rounded-full text-sm font-semibold flex items-center justify-center gap-2 mt-2"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Shop Now
+          </button>
+        </div>
+      )}
     </header>
   );
-});
-
-Header.displayName = 'Header';
-
-export default Header;
+}

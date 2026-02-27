@@ -1,133 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Frontend Performance Optimization for PageSpeed 90+",
+  "title": "Fix product upload/edit in admin panel and apply pink button styling site-wide",
   "projectName": "RecomNow India",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-2",
-      "text": "Update the OptimizedImage component and all other image tags across the frontend to use WebP format with PNG/JPEG fallback via <picture> elements. Implement native lazy loading (loading=\"lazy\") for all images below the fold. For the hero/LCP image in Hero.tsx, set fetchpriority=\"high\" and explicitly remove any lazy loading attribute so it loads eagerly.",
-      "target": "frontend",
+      "id": "REQ-1",
+      "text": "Fix the 'Add Product' flow in the ProductManagement admin component so that submitting the add-product dialog successfully calls the backend addProduct mutation, persists the new product, and refreshes the product list without errors.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-latest"
         ],
         "quotes": [
-          "Convert all images to WebP format. Implement native lazy loading for all images below the fold. For the hero image (LCP element), set fetchpriority=\"high\" and ensure it is not lazy-loaded."
+          "I cannot upload new product"
         ]
       },
       "acceptanceCriteria": [
-        "All images below the fold have loading=\"lazy\" attribute",
-        "Hero/LCP image has fetchpriority=\"high\" and no lazy loading",
-        "Images are served as WebP with fallback via <picture> element",
-        "OptimizedImage component reflects these changes"
+        "Clicking 'Add Product' and submitting the form with valid data creates a new product in the backend.",
+        "The product list refreshes and shows the newly added product after submission.",
+        "No console errors or unhandled exceptions occur during the add-product flow.",
+        "Validation errors (empty required fields) are shown inline without crashing the form."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Fix the 'Edit Product' flow in the ProductManagement admin component so that opening an existing product in the edit dialog pre-populates all fields correctly, submitting calls the backend updateProduct mutation, and the product list reflects the saved changes.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "cannot edit existing product"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clicking 'Edit' on any product opens the dialog with all existing fields (name, category, price, discount, featured flag, image URL, Amazon link) pre-filled.",
+        "Submitting the edit form updates the product in the backend.",
+        "The product list refreshes and reflects the updated product data after save.",
+        "No console errors or unhandled exceptions occur during the edit-product flow."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure the Vite build configuration in vite.config.ts is set to produce fully minified HTML, CSS, and JavaScript output. Verify terser minification options are enabled with aggressive settings (remove comments, collapse whitespace, mangle variable names). Confirm CSS minification is active in the build pipeline.",
+      "text": "Change every button across the entire frontend (public-facing pages including Hero CTAs, ProductGrid, Header, Footer, SocialProof, TrustBadges) and the Admin Panel (AdminLogin, AdminPanel, ProductManagement dialogs, and all tab/action buttons) to use the hot-pink color defined in the Tailwind config (the 'hot-pink' palette token). Remove any remaining non-pink primary button styles and ensure consistency.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-latest"
         ],
         "quotes": [
-          "Minify all HTML, CSS, and JavaScript files to reduce payload size."
+          "Change all buttons' colors at frontend and Admin Panel backend into pink"
         ]
       },
       "acceptanceCriteria": [
-        "Production build output JS files are minified and mangled",
-        "CSS output files are minified with no whitespace",
-        "HTML entry point is minified in the build output",
-        "Terser options in vite.config.ts include compress and mangle settings"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "In frontend/index.html, extract critical above-the-fold CSS and inline it directly into a <style> tag in the <head>. For non-essential JavaScript (excluding the main app bundle), add defer or async attributes so they do not block the initial page render. Any script tags that are not required for first paint should use defer.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Identify non-critical CSS and inline it into the <head>. Defer or use async for all non-essential JavaScript so it doesn't block the initial page render."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Critical CSS for above-the-fold content is inlined in <head>",
-        "Non-essential <script> tags in index.html have defer or async attribute",
-        "No render-blocking scripts appear before the closing </body> tag without defer/async",
-        "Page renders initial content without waiting for deferred scripts"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Audit all <img> tags and video containers across the frontend components (Hero.tsx, ProductGrid.tsx, ProductManagement.tsx, OptimizedImage.tsx, TrustBadges.tsx, etc.) and ensure every image and video element has explicit width and height attributes set. This reserves layout space during loading and eliminates Cumulative Layout Shift (CLS).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Add explicit width and height attributes to all image tags and video containers to reserve space during loading."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All <img> tags have explicit width and height attributes",
-        "All video container elements have explicit dimensions",
-        "OptimizedImage component passes through width/height props to the rendered element",
-        "No image or video element lacks dimension attributes"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Update or verify the existing delayedScripts utility (frontend/src/utils/delayedScripts.ts) to ensure all third-party tracking scripts (including Google Analytics in index.html) and heavy widgets are deferred until 3 seconds after the window.load event fires. Move any inline Google Analytics initialization in index.html to use this delayed loading mechanism.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Delay the execution of any third-party tracking scripts or heavy widgets until 3 seconds after the 'window.load' event to prioritize the main content."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Google Analytics and other third-party scripts are not loaded on initial page parse",
-        "delayedScripts.ts injects tracking scripts at least 3 seconds after window.load",
-        "No third-party scripts block the critical rendering path",
-        "The 3-second delay logic is correctly applied before script injection"
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Ensure all @font-face declarations and Google Fonts imports in frontend/src/index.css and frontend/index.html include font-display: swap so that fallback text is shown immediately while web fonts are loading, preventing invisible text (FOIT).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Ensure all web fonts use font-display: swap to prevent invisible text during loading."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All @font-face rules in index.css include font-display: swap",
-        "Any Google Fonts URL in index.html includes &display=swap parameter",
-        "No web font loading causes invisible text during page load"
+        "All CTA and action buttons on the public-facing site render with the hot-pink background color.",
+        "All buttons inside the Admin Panel (login, register, add product, edit product, delete product, logout, tab navigation) render with the hot-pink background color.",
+        "No button retains a non-pink primary color (e.g., blue, gray, or default Tailwind primary).",
+        "Hover and focus states are visually consistent with a pink theme (e.g., darker pink on hover).",
+        "Destructive/danger buttons (e.g., delete) may use a red variant but all other action buttons must be pink."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files listed in frontend.immutablePaths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
-    "All changes are frontend-only; do not alter backend/main.mo",
-    "Maintain existing functionality — optimizations must not break product loading, admin panel, or affiliate link behavior"
+    "Do not modify files listed in frontend.immutablePaths: useInternetIdentity.ts, useActor.ts, main.tsx, and the ui components directory.",
+    "All backend logic must remain within the single main.mo actor.",
+    "Do not alter the existing data schema or break any existing backend query/mutation function signatures."
   ],
   "nonGoals": [
-    "Backend Motoko code changes",
-    "Cloudflare CDN configuration (documented separately in CLOUDFLARE_CDN_SETUP.md)",
-    "Service worker changes beyond what is needed for asset caching",
-    "Adding new product features or UI redesign"
+    "Adding new product fields or changing the product data model beyond what is needed to fix the upload/edit flows.",
+    "Redesigning the admin panel layout or navigation structure.",
+    "Changes to blog, newsletter, or site pages management sections.",
+    "Any new features beyond fixing product CRUD and button color standardization."
   ],
   "imageRequirements": {
     "required": [],

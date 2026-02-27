@@ -87,7 +87,7 @@ export default function AdminPage() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleRetry}
-                className="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-colors"
+                className="w-full py-2.5 bg-pink-hot hover:bg-pink-hot-dark text-white font-semibold rounded-lg transition-colors"
               >
                 Retry Verification
               </button>
@@ -122,7 +122,7 @@ export default function AdminPage() {
 
       {showPanel && <AdminPanel />}
 
-      {showLogin && <AdminLogin onSuccess={() => {}} />}
+      {showLogin && <AdminLogin />}
     </div>
   );
 }

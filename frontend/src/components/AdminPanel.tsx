@@ -1,78 +1,95 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useAuth } from '../hooks/useAuth';
-import { useLogoutUser } from '../hooks/useBackendAuth';
+import { useLogoutUser } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import ProductManagement from './admin/ProductManagement';
 import BlogManagement from './admin/BlogManagement';
 import NewsletterManagement from './admin/NewsletterManagement';
 import SitePagesManagement from './admin/SitePagesManagement';
+import { Button } from './ui/button';
+import { LogOut, Package, FileText, Mail, Layout } from 'lucide-react';
+
+type AdminTab = 'products' | 'blog' | 'newsletter' | 'sitepages';
+
+const TABS: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
+  { id: 'products', label: 'Products', icon: <Package className="w-4 h-4" /> },
+  { id: 'blog', label: 'Blog', icon: <FileText className="w-4 h-4" /> },
+  { id: 'newsletter', label: 'Newsletter', icon: <Mail className="w-4 h-4" /> },
+  { id: 'sitepages', label: 'Site Pages', icon: <Layout className="w-4 h-4" /> },
+];
 
 export default function AdminPanel() {
-  const { identity, clear: clearII } = useInternetIdentity();
-  const { username, clearSession } = useAuth();
+  const { clear: iiClear, identity } = useInternetIdentity();
+  const { clearSession, sessionToken } = useAuth();
   const logoutMutation = useLogoutUser();
   const queryClient = useQueryClient();
-
-  const displayName = username || (identity ? identity.getPrincipal().toString().slice(0, 12) + '…' : 'Admin');
+  const [activeTab, setActiveTab] = useState<AdminTab>('products');
 
   const handleLogout = async () => {
     try {
-      await logoutMutation.mutateAsync();
+      await logoutMutation.mutateAsync(sessionToken || undefined);
     } catch {
-      // Force logout even on error
-      clearSession();
-      queryClient.clear();
+      // ignore backend errors on logout
     }
+    clearSession();
     if (identity) {
-      try { await clearII(); } catch { /* ignore */ }
+      await iiClear();
     }
+    queryClient.clear();
   };
 
   return (
-    <div className="min-h-screen bg-navy-50">
+    <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <div className="bg-navy-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🛡️</span>
-          <div>
-            <h1 className="font-bold text-lg leading-tight">Admin Panel</h1>
-            <p className="text-navy-300 text-xs">Welcome, {displayName}</p>
+      <header className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="/assets/generated/recomnow-logo.dim_200x200.png"
+              alt="RecomNow"
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <span className="font-bold text-foreground text-lg">Admin Panel</span>
           </div>
+          <Button
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="bg-pink-hot hover:bg-pink-hot-dark text-white gap-2"
+            size="sm"
+          >
+            <LogOut className="w-4 h-4" />
+            {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+          </Button>
         </div>
-        <button
-          onClick={handleLogout}
-          disabled={logoutMutation.isPending}
-          className="px-4 py-2 bg-navy-700 hover:bg-navy-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          {logoutMutation.isPending ? 'Logging out…' : 'Logout'}
-        </button>
-      </div>
+      </header>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="products">
-          <TabsList className="mb-6 bg-white border border-navy-100 shadow-sm">
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="blog">Blog</TabsTrigger>
-            <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
-            <TabsTrigger value="pages">Site Pages</TabsTrigger>
-          </TabsList>
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Tab navigation */}
+        <nav className="flex gap-1 mb-6 bg-muted rounded-lg p-1 w-fit">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-pink-hot text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </nav>
 
-          <TabsContent value="products">
-            <ProductManagement />
-          </TabsContent>
-          <TabsContent value="blog">
-            <BlogManagement />
-          </TabsContent>
-          <TabsContent value="newsletter">
-            <NewsletterManagement />
-          </TabsContent>
-          <TabsContent value="pages">
-            <SitePagesManagement />
-          </TabsContent>
-        </Tabs>
+        {/* Tab content */}
+        <main>
+          {activeTab === 'products' && <ProductManagement />}
+          {activeTab === 'blog' && <BlogManagement />}
+          {activeTab === 'newsletter' && <NewsletterManagement />}
+          {activeTab === 'sitepages' && <SitePagesManagement />}
+        </main>
       </div>
     </div>
   );

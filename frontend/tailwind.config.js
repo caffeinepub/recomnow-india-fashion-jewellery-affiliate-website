@@ -87,7 +87,9 @@ export default {
                     700: 'oklch(var(--navy-700))',
                     800: 'oklch(var(--navy-800))',
                     900: 'oklch(var(--navy-900))'
-                }
+                },
+                'pink-hot': 'oklch(var(--pink-hot))',
+                'pink-hot-dark': 'oklch(var(--pink-hot-dark))'
             },
             borderRadius: {
                 lg: 'var(--radius)',

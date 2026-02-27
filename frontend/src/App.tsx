@@ -22,15 +22,15 @@ function LoadingFallback() {
   );
 }
 
-function HomePage() {
+function HomePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
     <>
-      <Hero />
+      <Hero onNavigate={onNavigate} />
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-900 mb-2">Our Products</h2>
-            <p className="text-navy-500 text-sm sm:text-base">Curated fashion & jewellery deals from Amazon</p>
+            <p className="text-navy-500 text-sm sm:text-base">Curated fashion &amp; jewellery deals from Amazon</p>
           </div>
           <ProductGrid />
         </div>
@@ -84,7 +84,7 @@ export default function App() {
         </Suspense>
       );
     }
-    return <HomePage />;
+    return <HomePage onNavigate={navigate} />;
   };
 
   const isAdminPage = pathname === '/admin';
@@ -93,7 +93,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       {!isAdminPage && !isSitemapPage && (
-        <Header currentRoute={pathname} onNavigate={navigate} />
+        <Header currentPath={pathname} onNavigate={navigate} />
       )}
 
       <main className="flex-1">

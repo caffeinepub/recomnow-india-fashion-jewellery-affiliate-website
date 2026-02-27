@@ -1,84 +1,135 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Product, ProductInput, UserProfile } from '../backend';
+import { ProductInput, Product } from '../backend';
 
 export function useGetAllProducts() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor, isFetching } = useActor();
 
   return useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      const result = await actor.getAllProducts();
-      return result ?? [];
+      if (!actor) return [];
+      return actor.getAllProducts();
     },
-    enabled: !!actor && !actorFetching,
-    staleTime: 30_000,
-    retry: 3,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
+    enabled: !!actor && !isFetching,
   });
 }
 
 export function useGetFeaturedProducts() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor, isFetching } = useActor();
 
   return useQuery<Product[]>({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return (await actor.getFeaturedProducts()) ?? [];
+      if (!actor) return [];
+      return actor.getFeaturedProducts();
     },
-    enabled: !!actor && !actorFetching,
-    staleTime: 30_000,
-    retry: 3,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
+    enabled: !!actor && !isFetching,
   });
 }
 
-export function useIsCallerAdmin() {
-  const { actor, isFetching: actorFetching } = useActor();
+export function useAddProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
 
-  return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
-    queryFn: async ({ signal }) => {
-      if (!actor) return false;
+  return useMutation({
+    mutationFn: async (input: ProductInput) => {
+      if (!actor) throw new Error('Actor not available');
+      const id = await actor.addProduct(input);
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    },
+    onError: (error: any) => {
+      console.error('Add product error:', error);
+    },
+  });
+}
 
-      // Race the backend call against an 8-second timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        const id = setTimeout(() => {
-          reject(new Error('Admin verification timed out. Please try again.'));
-        }, 8000);
-        // Clean up the timer if the query is cancelled
-        signal?.addEventListener('abort', () => clearTimeout(id));
-      });
+export function useUpdateProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
 
-      try {
-        const result = await Promise.race([actor.isCallerAdmin(), timeoutPromise]);
-        return result;
-      } catch (err) {
-        // Re-throw so React Query marks this as an error state
-        throw err;
+  return useMutation({
+    mutationFn: async ({ id, input }: { id: bigint; input: ProductInput }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.updateProduct(id, input);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    },
+    onError: (error: any) => {
+      console.error('Update product error:', error);
+    },
+  });
+}
+
+export function useDeleteProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.deleteProduct(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    },
+    onError: (error: any) => {
+      console.error('Delete product error:', error);
+    },
+  });
+}
+
+export function useRegisterUser() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async ({ username, password }: { username: string; password: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.addUser(username, password);
+    },
+  });
+}
+
+export function useLoginUser() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async ({ username, password }: { username: string; password: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      const token = await actor.authenticateUser(username, password);
+      return token;
+    },
+  });
+}
+
+export function useLogoutUser() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (sessionToken?: string) => {
+      if (!actor) throw new Error('Actor not available');
+      if (sessionToken) {
+        await actor.logout(sessionToken);
       }
     },
-    enabled: !!actor && !actorFetching,
-    staleTime: 30_000,
-    retry: false, // Don't auto-retry — let the user decide
-    gcTime: 0,    // Don't cache stale admin status
   });
 }
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  const query = useQuery<UserProfile | null>({
+  const query = useQuery({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      try {
-        return await actor.getCallerUserProfile();
-      } catch {
-        return null;
-      }
+      return actor.getCallerUserProfile();
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -91,80 +142,15 @@ export function useGetCallerUserProfile() {
   };
 }
 
-export function useAddProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
+export function useIsCallerAdmin() {
+  const { actor, isFetching } = useActor();
 
-  return useMutation({
-    mutationFn: async (input: ProductInput) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.addProduct(input);
+  return useQuery<boolean>({
+    queryKey: ['isCallerAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
-    },
-  });
-}
-
-export function useUpdateProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, input }: { id: bigint; input: ProductInput }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.updateProduct(id, input);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
-    },
-  });
-}
-
-export function useDeleteProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.deleteProduct(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
-    },
-  });
-}
-
-export function useSaveCallerUserProfile() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.saveCallerUserProfile(profile);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-export function useLogoutUser() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (sessionToken: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.logout(sessionToken);
-    },
-    onSuccess: () => {
-      queryClient.clear();
-    },
+    enabled: !!actor && !isFetching,
   });
 }
